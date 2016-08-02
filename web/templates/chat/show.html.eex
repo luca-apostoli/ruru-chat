@@ -1,0 +1,18 @@
+<h2>Show chat</h2>
+
+<ul>
+
+  <li>
+    <strong>User:</strong>
+    <%= @chat.user %>
+  </li>
+
+  <li>
+    <strong>Operator:</strong>
+    <%= @chat.operator %>
+  </li>
+
+</ul>
+
+<%= link "Edit", to: chat_path(@conn, :edit, @chat) %>
+<%= link "Back", to: chat_path(@conn, :index) %>

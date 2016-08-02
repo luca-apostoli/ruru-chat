@@ -1,0 +1,24 @@
+<h2>Show operator</h2>
+
+<ul>
+  <%= if is_logged?(@conn) do %>
+    <li><%= current_operator(@conn).email %></li>
+    <li><%= link "Logout", to: operator_path(@conn, :logout) %></li>
+  <% else %>
+    <li><%= link "Login",    to: operator_path(@conn, :login) %></li>
+    <li><%= link "Register", to: operator_path(@conn, :new) %></li>
+  <% end %>
+  <li>
+    <strong>Name:</strong>
+    <%= @operator.name %>
+  </li>
+
+  <li>
+    <strong>Email:</strong>
+    <%= @operator.email %>
+  </li>
+
+</ul>
+
+<%= link "Edit", to: operator_path(@conn, :edit, @operator) %>
+<%= link "Back", to: operator_path(@conn, :index) %>

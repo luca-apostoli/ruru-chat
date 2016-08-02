@@ -1,0 +1,29 @@
+<h2>Listing operators</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Password</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for operator <- @operators do %>
+    <tr>
+      <td><%= operator.name %></td>
+      <td><%= operator.email %></td>
+
+      <td class="text-right">
+        <%= link "Show", to: operator_path(@conn, :show, operator), class: "btn btn-default btn-xs" %>
+        <%= link "Edit", to: operator_path(@conn, :edit, operator), class: "btn btn-default btn-xs" %>
+        <%= link "Delete", to: operator_path(@conn, :delete, operator), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<%= link "New operator", to: operator_path(@conn, :new) %>

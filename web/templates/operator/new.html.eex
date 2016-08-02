@@ -1,0 +1,6 @@
+<h2>New operator</h2>
+
+<%= render "form.html", changeset: @changeset,
+                        action: operator_path(@conn, :create) %>
+
+<%= link "Back", to: operator_path(@conn, :index) %>
