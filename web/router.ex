@@ -9,6 +9,15 @@ defmodule Ruru.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :browser_auth do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug Ruru.Plugs.Authentication
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -19,8 +28,8 @@ defmodule Ruru.Router do
   resources "/chats", ChatController
 
 
-  scope "/", Ruru do
-    pipe_through :browser # Use the default browser stack
+  scope "/admin", Ruru do
+    pipe_through :browser_auth # Use the default browser stack
     
     post "/operators/update/:id", OperatorController, :update
     get "/operators/show/:id", OperatorController, :show
@@ -28,12 +37,18 @@ defmodule Ruru.Router do
     delete "/operators/delete/:id", OperatorController, :delete
     post "/operators/create", OperatorController, :create
     get "/operators/new", OperatorController, :new
-    get "/operators", OperatorController, :index
-    post "/checklogin", OperatorController, :checklogin
-    get "/login", OperatorController, :login
-    get "/logout", OperatorController, :logout
-    get "/", PageController, :index
+    get "/operators", OperatorController, :index    
   end
+
+  scope "/", Ruru do
+    pipe_through :browser # Use the default browser stack
+
+    post "/checklogin", LoginController, :checklogin
+    get "/login", LoginController, :login
+    get "/logout", LoginController, :logout
+    get "/", PageController, :index
+  end    
+
 
   # Other scopes may use custom stacks.
   # scope "/api", Ruru do
