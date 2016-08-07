@@ -1,12 +1,15 @@
 defmodule Ruru.UserSocket do
   use Phoenix.Socket
 
+  alias Ruru.User
+  alias Ruru.Repo  
+
   ## Channels
-  # channel "room:*", Ruru.RoomChannel
+  channel "room:*", Ruru.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
-  # transport :longpoll, Phoenix.Transports.LongPoll
+  transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -19,8 +22,19 @@ defmodule Ruru.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
-    {:ok, socket}
+#  def connect(_params, socket) do
+#    {:ok, socket}    
+#  end
+
+  def connect(%{"token" => token}, socket) do
+    # Max age of 2 weeks (1209600 seconds)
+    case Phoenix.Token.verify(socket, "user", token, max_age: 1209600) do
+      {:ok, user_id} ->
+        socket = assign(socket, :user, Repo.get!(User, user_id))
+        {:ok, socket}
+      {:error, _} ->
+        :error
+    end
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -33,5 +47,6 @@ defmodule Ruru.UserSocket do
   #     Ruru.Endpoint.broadcast("users_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+#  def id(_socket), do: nil
+  def id(socket), do: "users_socket:#{socket.assigns.user.id}"
 end

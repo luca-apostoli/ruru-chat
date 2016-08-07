@@ -5,6 +5,7 @@ defmodule Ruru.User do
     field :name, :string
     field :email, :string
 
+    has_many :chats, Ruru.Chat
     timestamps()
   end
 

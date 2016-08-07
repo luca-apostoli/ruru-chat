@@ -1,9 +1,14 @@
 defmodule Ruru.Chat do
   use Ruru.Web, :model
 
+  import Ecto.Query
+
   schema "chats" do
-    belongs_to :user, Ruru.User
-    belongs_to :operator, Ruru.Operator
+
+    field :status, :boolean, default: false
+
+    belongs_to :user, Ruru.User, foreign_key: :user_id
+    belongs_to :operator, Ruru.Operator, foreign_key: :operator_id
 
     timestamps()
   end
@@ -13,7 +18,25 @@ defmodule Ruru.Chat do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [])
+    |> cast(params, [:user_id])
+    |> assoc_constraint(:user)
     |> validate_required([])
   end
+  
+  def by_user(query, user) do
+    from c in query,
+    join: u in Ruru.User, on: c.user_id == u.id,
+    where: u.id == ^user.id
+  end
+
+  def open(query) do
+    from c in query,
+    where: c.status == false
+  end
+
+  def sorted(query) do
+    from c in query,
+    order_by: [desc: c.inserted_at]
+  end
+
 end

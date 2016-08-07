@@ -22,7 +22,6 @@ defmodule Ruru.Router do
     plug :accepts, ["json"]
   end
 
-#  resources "/operators", OperatorController
   resources "/users", UserController
   resources "/messages", MessageController
   resources "/chats", ChatController
@@ -51,7 +50,9 @@ defmodule Ruru.Router do
 
 
   # Other scopes may use custom stacks.
-  # scope "/api", Ruru do
-  #   pipe_through :api
-  # end
+  scope "/api", Ruru do
+    pipe_through :api
+
+    get "/create/:email", PageController, :create
+  end
 end
