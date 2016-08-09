@@ -26,10 +26,10 @@ defmodule Ruru.Router do
   resources "/messages", MessageController
   resources "/chats", ChatController
 
-
   scope "/admin", Ruru do
     pipe_through :browser_auth # Use the default browser stack
     
+    get "/chats/answer", ChatController, :answer
     post "/operators/update/:id", OperatorController, :update
     get "/operators/show/:id", OperatorController, :show
     get "/operators/edit/:id", OperatorController, :edit

@@ -1,26 +1,36 @@
-/**
- * This file provided by Facebook is for non-commercial testing and evaluation
- * purposes only. Facebook reserves all rights not expressly granted.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * FACEBOOK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
 import React from "react"
 import ReactDOM from "react-dom"
 import {Socket} from "phoenix"
+import {Starter} from "./starter"
 
-let socket = new Socket("/socket", {params: {token: "g3QAAAACZAAEZGF0YWEDZAAGc2lnbmVkbgYAwt4AM1YB##IGcqzHduFTykBTaYuXb9VGoazv4="}})
-socket.connect()
+let Remarkable = require('remarkable')
+let $ = require("jquery")
+
+let socket;
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel("room:lobby", {})
-channel.join()
-  .receive("ok", resp => { console.log("Joined successfully", resp) })
-  .receive("error", resp => { console.log("Unable to join", resp) })
+let channel;
 
+var Bootstrap = React.createClass({
+  getInitialState: function() {
+    return {login: false, token: "", name: "", chat: ""};
+  },
+  handleLogin: function(data) {
+    this.setState({login: true, token: data.token, name: data.name, chat: data.chat});
+  },
+  render: function() {
+    return (
+      <section>
+      {(() => {
+        if (this.state.login) {
+          return <CommentBox token={this.state.token} name={this.state.name} chat={this.state.chat}/>;
+        } else {
+          return <SimpleLogin login={this.state.login} handleLogin={this.handleLogin}/>;
+        }
+      })()}
+      </section>
+    );
+  }
+});
 
 var Comment = React.createClass({
   rawMarkup: function() {
@@ -63,6 +73,14 @@ var CommentBox = React.createClass({
     return {data: []};
   },
   componentDidMount: function() {
+    socket = new Socket("/socket", {params: {token: this.props.token}})
+    socket.connect()
+    // Now that you are connected, you can join channels with a topic:
+    channel = socket.channel("room:lobby", {})
+    channel.join()
+      .receive("ok", resp => { console.log("Joined successfully", resp) })
+      .receive("error", resp => { console.log("Unable to join", resp) })
+
     this.loadCommentsFromServer();
   },
   render: function() {
@@ -70,7 +88,7 @@ var CommentBox = React.createClass({
       <div className="commentBox">
         <h1>Comments</h1>
         <CommentList data={this.state.data} />
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
+        <CommentForm token={this.props.token} name={this.props.name} onCommentSubmit={this.handleCommentSubmit} />
       </div>
     );
   }
@@ -97,11 +115,8 @@ var CommentForm = React.createClass({
   getInitialState: function() {
     return {author: '', text: '', token: ''};
   },
-  handleTokenChange: function(e) {
-    this.setState({token: e.target.value});
-  },
-  handleAuthorChange: function(e) {
-    this.setState({author: e.target.value});
+  componentDidMount: function() {
+    this.setState({author: this.props.name, text: '', token: this.props.token});
   },
   handleTextChange: function(e) {
     this.setState({text: e.target.value});
@@ -121,16 +136,12 @@ var CommentForm = React.createClass({
     return (
       <form className="commentForm" onSubmit={this.handleSubmit}>
         <input
-          type="text"
-          placeholder="Your token"
+          type="hidden"
           value={this.state.token}
-          onChange={this.handleTokenChange}
         />
         <input
-          type="text"
-          placeholder="Your name"
+          type="hidden"
           value={this.state.author}
-          onChange={this.handleAuthorChange}
         />
         <input
           type="text"
@@ -144,15 +155,45 @@ var CommentForm = React.createClass({
   }
 });
 
+var SimpleLogin = React.createClass({
+  getInitialState: function() {
+    return {email: ''};
+  },
+  handleSubmit: function(e) {
+    e.preventDefault();
+    let props = this.props;
+    //chiamare in remoto per loggare utente
+    $.ajax("/api/create/" + this.state.email, {
+      method: "GET",
+      success: function(data) {
+        console.log(data);
+        if (!props.login) {
+          props.handleLogin(data);
+        }
+      }
+    });    
+  },
+  handleEmailChange: function(e) {
+    this.setState({email: e.target.value});
+  },
+  render: function() {
+    return (
+      <form className="loginForm" onSubmit={this.handleSubmit}>
+          <input
+            type="text"
+            placeholder="Your Email"
+            value={this.state.email}
+            onChange={this.handleEmailChange}
+          />
+          <input type="submit" value="Start" />
+      </form>
+    );
+  }
+});
+
 /*
 creare nuovo componente alternativo che si mostra quando utente nn loggato
 passare il suo sato=token + email come props dell altro comp
 inizializzare comp dei commenti con il socket + token
 */
-
-ReactDOM.render(
-  <CommentBox/>,
-  document.getElementById('content')
-);
-
-export default socket
+Starter(<Bootstrap/>,'content')

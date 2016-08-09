@@ -8,6 +8,10 @@ defmodule Ruru.ChatController do
     render(conn, "index.html", chats: chats)
   end
 
+  def answer(conn, _params) do
+    render(conn, "answer.html")
+  end
+
   def new(conn, _params) do
     changeset = Chat.changeset(%Chat{})
     render(conn, "new.html", changeset: changeset)

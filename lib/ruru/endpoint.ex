@@ -2,6 +2,7 @@ defmodule Ruru.Endpoint do
   use Phoenix.Endpoint, otp_app: :ruru
 
   socket "/socket", Ruru.UserSocket
+  socket "/answersocket", Ruru.OperatorSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
