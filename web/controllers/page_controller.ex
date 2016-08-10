@@ -16,29 +16,28 @@ defmodule Ruru.PageController do
 				changeset = User.changeset(%User{}, %{name: email, email: email})
 			    case Repo.insert(changeset) do
 			      {:ok, newuser} ->
-			        json conn, loadUserChat(newuser, %{token: Phoenix.Token.sign(conn, "user", newuser.id), name: newuser.name, chat: 0})
+			        json conn, loadUserChat(newuser, %{token: Phoenix.Token.sign(conn, "user", newuser.id), user: newuser.id, name: newuser.name, chat: 0})
 			      {:error, _changeset} ->
 			        :error
 			    end
 		    user ->
-				json conn, loadUserChat(user, %{token: Phoenix.Token.sign(conn, "user", user.id), name: user.name, chat: 0})
+				json conn, loadUserChat(user, %{token: Phoenix.Token.sign(conn, "user", user.id), user: user.id, name: user.name, chat: 0})
 		end
 	end
 
-	@doc """
-		carica una chat in base all'utente
-	"""
 	defp loadUserChat(user, params \\ %{}) do
 	    case Chat |> Chat.by_user(user) |> Chat.open |> Chat.sorted |> first |> Repo.one do
 	      nil ->
 	        chat = Chat.changeset(%Chat{}, %{user_id: user.id})
 	        case Repo.insert(chat) do
 	        	{:ok, newchat} -> 
+	        		Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{name: user.name, chat: newchat.id}
 	        		%{params | chat: newchat.id}
 	    		{:error, _details} ->
 	    			:error
 	        end
 	      loadedchat ->
+	      	Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{name: user.name, chat: loadedchat.id}
 	  		%{params | chat: loadedchat.id}
 	    end
 	end

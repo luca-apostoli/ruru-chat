@@ -12,17 +12,22 @@ let channel;
 
 var Bootstrap = React.createClass({
   getInitialState: function() {
-    return {login: false, token: "", name: "", chat: ""};
+    return {login: false, token: "", name: "", chat: "", user: ""};
   },
   handleLogin: function(data) {
-    this.setState({login: true, token: data.token, name: data.name, chat: data.chat});
+    this.setState({login: true, token: data.token, name: data.name, chat: data.chat, user: data.user});
   },
   render: function() {
     return (
       <section>
       {(() => {
         if (this.state.login) {
-          return <CommentBox token={this.state.token} name={this.state.name} chat={this.state.chat}/>;
+          return <CommentBox 
+                  token={this.state.token} 
+                  name={this.state.name} 
+                  chat={this.state.chat} 
+                  user={this.state.user}
+                  />;
         } else {
           return <SimpleLogin login={this.state.login} handleLogin={this.handleLogin}/>;
         }
@@ -67,16 +72,16 @@ var CommentBox = React.createClass({
     comment.id = Date.now()
     var newComments = comments.concat([comment])
 //    this.setState({data: newComments});
-    channel.push("new_msg", {body: comment.text, author: comment.author, token: comment.token})    
+    channel.push("new_msg", {body: comment.text, author: comment.author, token: comment.token, guest: this.props.user, role: "user"})    
   },
   getInitialState: function() {
-    return {data: []};
+    return {data: [], user: this.props.user};
   },
   componentDidMount: function() {
     socket = new Socket("/socket", {params: {token: this.props.token}})
     socket.connect()
     // Now that you are connected, you can join channels with a topic:
-    channel = socket.channel("room:lobby", {})
+    channel = socket.channel("room:" + this.props.chat, {role: "user", guest: this.props.name})
     channel.join()
       .receive("ok", resp => { console.log("Joined successfully", resp) })
       .receive("error", resp => { console.log("Unable to join", resp) })

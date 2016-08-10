@@ -22,9 +22,9 @@ defmodule Ruru.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-#  def connect(_params, socket) do
-#    {:ok, socket}    
-#  end
+  def connect(%{"role" => role}, socket) do
+    {:ok, socket}    
+  end
 
   def connect(%{"token" => token}, socket) do
     # Max age of 2 weeks (1209600 seconds)
@@ -48,5 +48,11 @@ defmodule Ruru.UserSocket do
   #
   # Returning `nil` makes this socket anonymous.
 #  def id(_socket), do: nil
-  def id(socket), do: "users_socket:#{socket.assigns.user.id}"
+  def id(socket) do
+    case socket.assigns[:user] do
+      nil -> nil
+      _ -> "users_socket:#{socket.assigns.user.id}"
+    end   
+ end
+
 end

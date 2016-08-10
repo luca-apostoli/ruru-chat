@@ -1,5 +1,7 @@
 defmodule Ruru.User do
   use Ruru.Web, :model
+  
+  import Ecto.Query
 
   schema "users" do
     field :name, :string
@@ -17,4 +19,16 @@ defmodule Ruru.User do
     |> cast(params, [:name, :email])
     |> validate_required([:name, :email])
   end
+
+  def by_username(query, name) do
+    from u in query,    
+    where: u.name == ^name
+  end
+
+  def by_email(query, email) do
+    from u in query,    
+    where: u.email == ^email
+  end
+
+
 end

@@ -5,7 +5,7 @@ defmodule Ruru.Message do
     field :text, :string
     field :sender, :string
     field :sender_id, :integer
-    belongs_to :chat, Ruru.Chat
+    belongs_to :chat, Ruru.Chat, foreign_key: :chat_id
 
     timestamps()
   end

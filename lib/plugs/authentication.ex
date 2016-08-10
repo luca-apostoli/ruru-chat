@@ -11,7 +11,7 @@ defmodule Ruru.Plugs.Authentication do
   			conn
 		_ ->
 			conn
-          	|> Phoenix.Controller.put_flash(:error, "User is not authenticated.")
+          |> Phoenix.Controller.put_flash(:error, "User is not authenticated.")
       		|> Phoenix.Controller.redirect(to: "/login")
       		|> halt
   	end
