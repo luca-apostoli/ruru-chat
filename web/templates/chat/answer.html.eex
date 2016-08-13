@@ -1,5 +1,9 @@
 <section>
-	<div class="row">
+	<script type="text/javascript">
+		window.operatorID = <%= current_operator(@conn).id %>;
+		window.operatorEmail = '<%= current_operator(@conn).email %>';
+	</script>
+	<div class="row">		
 		<div class="col-lg-6 col-sm-12" id="answer"></div>
 	</div>
 </section>

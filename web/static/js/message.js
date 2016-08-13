@@ -140,6 +140,7 @@ var CommentForm = React.createClass({
   render: function() {
     return (
       <form className="commentForm" onSubmit={this.handleSubmit}>
+        <div className="ui action input large">
         <input
           type="hidden"
           value={this.state.token}
@@ -154,7 +155,8 @@ var CommentForm = React.createClass({
           value={this.state.text}
           onChange={this.handleTextChange}
         />
-        <input type="submit" value="Post" />
+        <input type="submit" value="Post" className="ui teal button large"/>
+        </div>
       </form>
     );
   }
@@ -184,13 +186,15 @@ var SimpleLogin = React.createClass({
   render: function() {
     return (
       <form className="loginForm" onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            placeholder="Your Email"
-            value={this.state.email}
-            onChange={this.handleEmailChange}
-          />
-          <input type="submit" value="Start" />
+          <div className="ui action input large">
+            <input            
+              type="text"
+              placeholder="Your Email"
+              value={this.state.email}
+              onChange={this.handleEmailChange}
+            />
+            <input type="submit" value="Start" className="ui teal button large primary"/>
+          </div>
       </form>
     );
   }

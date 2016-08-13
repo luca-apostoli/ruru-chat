@@ -55,6 +55,9 @@ var AnswerBootstrap = React.createClass({
     console.log(user);
     this.loadMessageChannel(user.chat, user.name);
   },
+  submitMessage: function(message) {
+    messageChannel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})    
+  },
   render: function() {
     return (
       <div className="app">
@@ -63,7 +66,7 @@ var AnswerBootstrap = React.createClass({
           <MessageBox messages={this.state.messages}/>
           {(() => {
             if (this.state.selected) {
-              return <MessageForm/>;
+              return <MessageForm onMessageSubmit={this.submitMessage}/>;
             }
           })()}
         </div>
@@ -95,7 +98,11 @@ var MessageBox = React.createClass({
   render: function() {
     var messageNodes = this.props.messages.map(function(message) {
       return (
-        <Message key={message.id} user={message.user} chat={message.chat} text={message.text}/>
+        <Message 
+          key={message.id} 
+          author={message.author} 
+          chat={message.chat} 
+          text={message.text}/>
       );
     });
     return (
@@ -123,18 +130,37 @@ var Message = React.createClass({
   render: function() {
     return (
       <div className="messageDetails">
-        <b>{this.props.user}</b>: {this.props.text}
+        <b>{this.props.author}</b>: {this.props.text}
       </div>
     );
   }
 });
 
 var MessageForm = React.createClass({
-  render: function() {
-    return (
-      <div>        
-      </div>
-    );
+    getInitialState: function() {
+      return {text: ""};
+    },
+    handleTextChange: function(e) {
+      this.setState({text: e.target.value})
+    },
+    handleSubmit: function (e) {
+      e.preventDefault();
+//      "body" => body, "author" => author, "guest" => guest, "role" => role
+      this.props.onMessageSubmit({author: window.operatorEmail, text: this.state.text, guest: window.operatorID});
+      this.setState({text: ''});
+    },
+    render: function() {
+      return (
+        <form className="messageForm" onSubmit={this.handleSubmit}>
+          <input
+            type="text"
+            placeholder="Say your answer..."
+            value={this.state.text}
+            onChange={this.handleTextChange}
+          />
+          <input type="submit" value="Send" />
+        </form>
+      );
   }
 });
 
