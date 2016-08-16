@@ -1,10 +1,15 @@
 <div class="ui one columns grid stackable">
-<div class="column">
-  <h2 class="ui header divided"><%= gettext "Welcome to %{name}", name: "Ruru!" %></h2>
-  <p>Simple support chat</p>
-</div>
-
-<div class="column">
-  <div id="content">
-  </div>
+	<div class="column">
+	  <h2 class="ui header"><%= gettext "Welcome to %{name}", name: "Ruru!" %> - <small>Simple support chat</small></h2>	  
+	  <div class="ui divider"></div>
+	</div>
+	<div class="column">
+		<div class="ui text container">
+			<p>Here you can find a simple request box where users can login with their email and chat with someone on your support team.</p>
+		</div>
+	</div>
+	<div class="column">
+	  <div id="content">
+	  </div>
+	</div>
 </div>

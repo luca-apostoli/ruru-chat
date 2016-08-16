@@ -60,9 +60,9 @@ var AnswerBootstrap = React.createClass({
   },
   render: function() {
     return (
-      <div className="app">
-        <div className="leftColumn"><UsersList users={this.state.users} handleClick={this.handleClickOnUser}/></div>
-        <div className="mainBody">
+      <div className="ui two column grid">
+        <div className="four wide column"><UsersList users={this.state.users} handleClick={this.handleClickOnUser}/></div>
+        <div className="ten wide column">
           <MessageBox messages={this.state.messages}/>
           {(() => {
             if (this.state.selected) {
@@ -129,8 +129,9 @@ var UserDetail = React.createClass({
 var Message = React.createClass({
   render: function() {
     return (
-      <div className="messageDetails">
-        <b>{this.props.author}</b>: {this.props.text}
+      <div className="column">
+      <h4 className="ui top attached block header">{this.props.author}</h4>
+      <div className="ui bottom attached segment">{this.props.text}</div>      
       </div>
     );
   }
@@ -145,20 +146,19 @@ var MessageForm = React.createClass({
     },
     handleSubmit: function (e) {
       e.preventDefault();
-//      "body" => body, "author" => author, "guest" => guest, "role" => role
       this.props.onMessageSubmit({author: window.operatorEmail, text: this.state.text, guest: window.operatorID});
       this.setState({text: ''});
     },
     render: function() {
       return (
-        <form className="messageForm" onSubmit={this.handleSubmit}>
+        <form className="messageForm ui form" onSubmit={this.handleSubmit}>
           <input
             type="text"
             placeholder="Say your answer..."
             value={this.state.text}
             onChange={this.handleTextChange}
           />
-          <input type="submit" value="Send" />
+          <input type="submit" value="Send" className="ui button" />
         </form>
       );
   }

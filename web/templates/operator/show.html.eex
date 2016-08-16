@@ -1,25 +1,30 @@
-<h2>Show operator</h2>
-
-<ul>
+<div class="ui menu">
   <%= if is_logged?(@conn) do %>
-    <li><%= current_operator(@conn).email %></li>
-    <li><%= link "Logout", to: login_path(@conn, :logout) %></li>
-    <li><%= link "Chats", to: chat_path(@conn, :answer) %></li>
+    <div class="header item"><%= current_operator(@conn).email %></div>
+    <div class="item"><%= link "Chats", to: chat_path(@conn, :answer) %></div>
+    <div class="right menu">
+      <div class="item"><%= link "Logout", to: login_path(@conn, :logout) %></div>        
+    </div>
   <% else %>
-    <li><%= link "Login",    to: login_path(@conn, :login) %></li>
-    <li><%= link "Register", to: operator_path(@conn, :new) %></li>
+    <div class="header item"><%= link "Login",    to: login_path(@conn, :login) %></div>
+    <div class="right menu">
+      <div class="item"><%= link "Register", to: operator_path(@conn, :new) %></div>
+    </div>
   <% end %>
-  <li>
-    <strong>Name:</strong>
-    <%= @operator.name %>
-  </li>
-
-  <li>
-    <strong>Email:</strong>
-    <%= @operator.email %>
-  </li>
-
-</ul>
-
-<%= link "Edit", to: operator_path(@conn, :edit, @operator) %>
-<%= link "Back", to: operator_path(@conn, :index) %>
+</div>
+<div class="ui aligned left grid">
+  <div class="column">
+    <h2 class="ui header">
+        <div class="content">Show operator</div>
+    </h2>
+    
+      <div class="ui text container">
+      <h3>Welcome <%= @operator.name %> - <%= @operator.email %></h3>
+      <div class="ui buttons">
+        <%= link "Edit", class: "ui button", to: operator_path(@conn, :edit, @operator) %>
+        <div class="or">or</div>
+        <%= link "Back", class: "ui button", to: operator_path(@conn, :index) %>
+      </div>
+    </div>
+  </div>
+</div>

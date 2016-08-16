@@ -46,9 +46,11 @@ var Comment = React.createClass({
 
   render: function() {
     return (
-      <div className="comment">
-        <span style={{fontWeight: "bold"}}>{this.props.author}</span>:
-        <span dangerouslySetInnerHTML={this.rawMarkup()} />
+      <div className="comment item">
+        <div className="content">
+          <span className="header" style={{fontWeight: "bold"}}>{this.props.author}</span>
+          <span dangerouslySetInnerHTML={this.rawMarkup()} />
+        </div>
       </div>
     );
   }
@@ -91,7 +93,7 @@ var CommentBox = React.createClass({
   render: function() {
     return (
       <div className="commentBox">
-        <h1>Comments</h1>
+        <h3>Comments</h3>
         <CommentList data={this.state.data} />
         <CommentForm token={this.props.token} name={this.props.name} onCommentSubmit={this.handleCommentSubmit} />
       </div>
@@ -102,14 +104,14 @@ var CommentBox = React.createClass({
 var CommentList = React.createClass({
   render: function() {
     var commentNodes = this.props.data.map(function(comment) {
-      return (
+      return (        
         <Comment author={comment.author} key={comment.id}>
           {comment.text}
         </Comment>
       );
     });
     return (
-      <div className="commentList">
+      <div className="commentList ui list">
         {commentNodes}
       </div>
     );

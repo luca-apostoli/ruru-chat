@@ -1,25 +1,37 @@
-<h2>Login operator</h2>
+<div class="ui middle aligned center aligned grid">
+  <div class="column">
+    <h2 class="ui teal header">
+        <div class="content">Login operator</div>
+    </h2>
 
-<%= form_for @changeset, login_path(@conn, :checklogin), fn f -> %>
-  <%= if @changeset.action do %>
-    <div class="alert alert-danger">
-      <p>Oops, something went wrong! Please check the errors below.</p>
-    </div>
-  <% end %>
+    <%= form_for @changeset, login_path(@conn, :checklogin), [class: "ui large form"], fn f -> %>
+      <div class="ui stacked segment">
+        <%= if @changeset.action do %>
+          <div class="ui error message">
+          Oops, something went wrong! Please check the errors below.
+          </div>
+        <% end %>
 
-  <div class="form-group">
-    <%= label f, :email, class: "control-label" %>
-    <%= text_input f, :email, class: "form-control" %>
-    <%= error_tag f, :email %>
+        <div class="field">
+          <div class="ui left icon input">
+            <i class="user icon"></i>                    
+            <%= text_input f, :email, placeholder: "E-mail address"   %>
+            </div>
+          <%= error_tag f, :email %>          
+        </div>
+
+        <div class="field">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>          
+            <%= password_input f, :cleanpwd, placeholder: "Password" %>
+            </div>
+            <%= error_tag f, :cleanpwd %>
+        </div>
+
+        <div>
+          <%= submit "LOGIN", class: "ui fluid large teal submit button" %>
+        </div>
+      </div>
+    <% end %>
   </div>
-
-  <div class="form-group">
-    <%= label f, :cleanpwd, class: "control-label" %>
-    <%= text_input f, :cleanpwd, class: "form-control" %>
-    <%= error_tag f, :cleanpwd %>
-  </div>
-
-  <div class="form-group">
-    <%= submit "Submit", class: "btn btn-primary" %>
-  </div>
-<% end %>
+</div>
