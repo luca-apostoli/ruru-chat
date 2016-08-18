@@ -31,8 +31,8 @@
       </main>
 
     </div> <!-- /container -->
-    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>   
     <script src="<%= static_path(@conn, "/semantic/dist/semantic.min.js") %>"></script>
+    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>    
   </body>
 </html>

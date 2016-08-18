@@ -13,7 +13,7 @@ let messageChannel
 
 var AnswerBootstrap = React.createClass({
   getInitialState: function() {
-    return {users: [], messages: [], selected: false};
+    return {users: [], chats: [], selected: false};
   },
   loadUsersFromServer: function() {
     userChannel.on("new_usr", payload => {
@@ -44,29 +44,61 @@ var AnswerBootstrap = React.createClass({
       .receive("error", resp => { console.log("Unable to join", resp) })
 
     messageChannel.on("new_msg", payload => {
-        var comments = this.state.messages
-        var comment = {id: Date.now(), text: payload.body, author: payload.author}
-        var newComments = comments.concat([comment])
-        this.setState({messages: newComments});
+        
+        var comment = {id: Date.now(), text: payload.body, author: payload.author}        
+        var oldchats = this.state.chats;
+        for (var i = oldchats.length - 1; i >= 0; i--) {
+          if(oldchats[i].chat === chat_id){
+            var comments = oldchats[i].messages
+            var newComments = comments.concat([comment])
+            oldchats[i].messages = newComments;
+          }
+        }
+        this.setState({chats: oldchats});
+//        this.setState({messages: newComments});
     })    
   },
   handleClickOnUser: function(user) {
-    this.setState({selected: user});
-    console.log(user);
-    this.loadMessageChannel(user.chat, user.name);
+    this.setState({selected: user});    
+    var found = false;
+    var oldchats = this.state.chats;
+    var chats = oldchats;
+    for (var i = oldchats.length - 1; i >= 0; i--) {
+      if(oldchats[i].chat === user.chat){
+        found = true;
+        oldchats[i].status = 'active';    
+      } else {
+        oldchats[i].status = '';
+      }
+    }
+    if(!found) {
+      var chat = {chat: user.chat, user: user.id, status: "active", messages: []};
+      chats = oldchats.concat([chat]);
+      // subscription to channel
+      this.loadMessageChannel(user.chat, user.name);
+    }
+    this.setState({chats: chats});      
   },
   submitMessage: function(message) {
     messageChannel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})    
   },
   render: function() {
+    var selected = this.state.selected
+    var chatsNodes = this.state.chats.map(function(chat) {
+      return (
+        <MessageBox key={chat.chat} chat={chat} messages={chat.messages} active={chat.status} selected={selected}/>
+        );
+    });
     return (
       <div className="ui two column grid">
         <div className="four wide column"><UsersList users={this.state.users} handleClick={this.handleClickOnUser}/></div>
         <div className="ten wide column">
-          <MessageBox messages={this.state.messages}/>
           {(() => {
             if (this.state.selected) {
-              return <MessageForm onMessageSubmit={this.submitMessage}/>;
+              return <div>
+                      {chatsNodes}
+                      <MessageForm onMessageSubmit={this.submitMessage}/>
+                      </div>;
             }
           })()}
         </div>
@@ -87,7 +119,7 @@ var UsersList = React.createClass({
       );
     });
     return (
-      <div className="usersList">
+      <div className="usersList ui secondary menu">
         {userNodes}
       </div>
     );
@@ -95,6 +127,9 @@ var UsersList = React.createClass({
 });
 
 var MessageBox = React.createClass({
+  isActive: function() {
+    return "messageList ui tab segment " + ((this.props.active === "active") ? "active" : "");
+  },
   render: function() {
     var messageNodes = this.props.messages.map(function(message) {
       return (
@@ -106,7 +141,7 @@ var MessageBox = React.createClass({
       );
     });
     return (
-      <div className="messageList">
+      <div className={this.isActive()} data-tab={this.props.chat.chat}>
         {messageNodes}
       </div>
     );
@@ -119,9 +154,9 @@ var UserDetail = React.createClass({
   },
   render: function() {
     return (
-      <div className="userDetails" onClick={this.handleClick}>
+      <a className="userDetails item" data-tab={this.props.chat} onClick={this.handleClick}>
         {this.props.name}
-      </div>
+      </a>
     );
   }
 });
