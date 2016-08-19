@@ -43,44 +43,61 @@ var AnswerBootstrap = React.createClass({
       .receive("ok", resp => { console.log("Joined successfully", resp) })
       .receive("error", resp => { console.log("Unable to join", resp) })
 
-    messageChannel.on("new_msg", payload => {
-        
-        var comment = {id: Date.now(), text: payload.body, author: payload.author}        
-        var oldchats = this.state.chats;
-        for (var i = oldchats.length - 1; i >= 0; i--) {
-          if(oldchats[i].chat === chat_id){
-            var comments = oldchats[i].messages
-            var newComments = comments.concat([comment])
-            oldchats[i].messages = newComments;
+    var oldchats = this.state.chats;
+    for (var i = oldchats.length - 1; i >= 0; i--) {      
+      if(oldchats[i].chat === chat_id){
+        // spostare in una funzione esterna
+        messageChannel.on("new_msg", payload => {
+          var oldchats = this.state.chats;
+          for (var i = oldchats.length - 1; i >= 0; i--) {      
+            if(oldchats[i].chat === chat_id){    
+              var comments = oldchats[i].messages
+              var comment = {id: Date.now(), text: payload.body, author: payload.author}
+              var newComments = comments.concat([comment])
+              oldchats[i].messages = newComments;          
+              this.setState({chats: oldchats});
+            }
           }
-        }
+        })
+        oldchats[i].channel = messageChannel;
         this.setState({chats: oldchats});
-//        this.setState({messages: newComments});
-    })    
+      }
+    }        
   },
   handleClickOnUser: function(user) {
-    this.setState({selected: user});    
-    var found = false;
-    var oldchats = this.state.chats;
-    var chats = oldchats;
-    for (var i = oldchats.length - 1; i >= 0; i--) {
-      if(oldchats[i].chat === user.chat){
-        found = true;
-        oldchats[i].status = 'active';    
-      } else {
-        oldchats[i].status = '';
+    this.setState({selected: user}, () => {    
+      var found = false;
+      var oldchats = this.state.chats;
+      var chats = oldchats;
+      for (var i = oldchats.length - 1; i >= 0; i--) {
+        if(oldchats[i].chat === user.chat){
+          found = true;
+          oldchats[i].status = 'active';    
+        } else {
+          oldchats[i].status = '';
+        }
       }
-    }
-    if(!found) {
-      var chat = {chat: user.chat, user: user.id, status: "active", messages: []};
-      chats = oldchats.concat([chat]);
-      // subscription to channel
-      this.loadMessageChannel(user.chat, user.name);
-    }
-    this.setState({chats: chats});      
+      if(!found) {
+        var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null};
+        chats = oldchats.concat([chat]);
+        this.setState({chats: chats}, () => {
+          // subscription to channel          
+          this.loadMessageChannel(user.chat, user.name)
+        });
+        
+        
+      } else {
+        this.setState({chats: chats});      
+      }
+    });
   },
   submitMessage: function(message) {
-    messageChannel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})    
+    var oldchats = this.state.chats;
+    for (var i = oldchats.length - 1; i >= 0; i--) {
+      if(oldchats[i].chat === this.state.selected.chat) {
+        oldchats[i].channel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})
+      }
+    }
   },
   render: function() {
     var selected = this.state.selected
