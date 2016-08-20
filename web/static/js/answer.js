@@ -5,6 +5,7 @@ import {Starter} from "./starter"
 
 let Remarkable = require('remarkable')
 let $ = require("jquery")
+let _ = require("lodash")
 
 let userSocket
 let userChannel
@@ -44,48 +45,44 @@ var AnswerBootstrap = React.createClass({
       .receive("error", resp => { console.log("Unable to join", resp) })
 
     var oldchats = this.state.chats;
-    for (var i = oldchats.length - 1; i >= 0; i--) {      
-      if(oldchats[i].chat === chat_id){
-        // spostare in una funzione esterna
-        messageChannel.on("new_msg", payload => {
-          var oldchats = this.state.chats;
-          for (var i = oldchats.length - 1; i >= 0; i--) {      
-            if(oldchats[i].chat === chat_id){    
-              var comments = oldchats[i].messages
-              var comment = {id: Date.now(), text: payload.body, author: payload.author}
-              var newComments = comments.concat([comment])
-              oldchats[i].messages = newComments;          
-              this.setState({chats: oldchats});
-            }
-          }
-        })
-        oldchats[i].channel = messageChannel;
-        this.setState({chats: oldchats});
-      }
-    }        
+    if(_.has(oldchats, chat_id)) {
+      // spostare in una funzione esterna
+      messageChannel.on("new_msg", payload => {
+        var oldchats = this.state.chats;
+        if(_.has(oldchats, chat_id)) {
+          var comments = oldchats[chat_id].messages
+          var comment = {id: Date.now(), text: payload.body, author: payload.author}
+          var newComments = comments.concat([comment])
+          oldchats[chat_id].messages = newComments;          
+          this.setState({chats: oldchats});
+        }
+      })
+      oldchats[chat_id].channel = messageChannel;
+      this.setState({chats: oldchats});
+    }       
   },
   handleClickOnUser: function(user) {
     this.setState({selected: user}, () => {    
       var found = false;
       var oldchats = this.state.chats;
       var chats = oldchats;
-      for (var i = oldchats.length - 1; i >= 0; i--) {
-        if(oldchats[i].chat === user.chat){
+      _.forEach(oldchats, function (item, key) {
+        if(key === user.chat && oldchats[key].chat === user.chat){
           found = true;
-          oldchats[i].status = 'active';    
+          oldchats[key].status = 'active';    
         } else {
-          oldchats[i].status = '';
+          if(!_.isEmpty(oldchats[key])) {
+            oldchats[key].status = '';
+          }
         }
-      }
+      })
       if(!found) {
         var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null};
-        chats = oldchats.concat([chat]);
+        chats[user.chat] = chat;
         this.setState({chats: chats}, () => {
           // subscription to channel          
           this.loadMessageChannel(user.chat, user.name)
-        });
-        
-        
+        });        
       } else {
         this.setState({chats: chats});      
       }
@@ -93,19 +90,20 @@ var AnswerBootstrap = React.createClass({
   },
   submitMessage: function(message) {
     var oldchats = this.state.chats;
-    for (var i = oldchats.length - 1; i >= 0; i--) {
-      if(oldchats[i].chat === this.state.selected.chat) {
-        oldchats[i].channel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})
-      }
+    if(_.has(oldchats, this.state.selected.chat)) {
+      oldchats[this.state.selected.chat].channel.push("new_msg", {body: message.text, author: message.author, guest: message.guest, role: "operator"})      
     }
   },
   render: function() {
     var selected = this.state.selected
-    var chatsNodes = this.state.chats.map(function(chat) {
-      return (
-        <MessageBox key={chat.chat} chat={chat} messages={chat.messages} active={chat.status} selected={selected}/>
-        );
-    });
+    var chatsNodes = null;
+    if(!_.isEmpty(this.state.chats)) {
+      chatsNodes = this.state.chats.map((chat) => {
+        return (
+          <MessageBox key={chat.chat} chat={chat} messages={chat.messages} active={chat.status} selected={selected}/>
+          );
+      });
+    }
     return (
       <div className="ui two column grid">
         <div className="four wide column"><UsersList users={this.state.users} handleClick={this.handleClickOnUser}/></div>
@@ -136,7 +134,7 @@ var UsersList = React.createClass({
       );
     });
     return (
-      <div className="usersList ui secondary menu">
+      <div className="usersList ui vertical secondary menu">
         {userNodes}
       </div>
     );
