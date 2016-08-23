@@ -1,6 +1,6 @@
 import React from "react"
 import ReactDOM from "react-dom"
-import {Socket} from "phoenix"
+import {Socket, Presence} from "phoenix"
 import {Starter} from "./starter"
 
 let Remarkable = require('remarkable')
@@ -57,6 +57,13 @@ var AnswerBootstrap = React.createClass({
           this.setState({chats: oldchats});
         }
       })
+      // listener per utente che abbandona
+      messageChannel.on("presence_diff", diff => {
+       presences = Presence.syncDiff(presences, diff, onJoin, onLeave)
+       console.log(presences);
+//       this.setState({users: Presence.list(room.presences, listBy)})
+     })
+
       oldchats[chat_id].channel = messageChannel;
       this.setState({chats: oldchats});
     }       

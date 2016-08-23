@@ -1,13 +1,14 @@
 defmodule Ruru.PageController do
-  use Ruru.Web, :controller
+	use Ruru.Web, :controller
 
-  alias Ruru.Chat
-  alias Ruru.User
-  alias Ruru.Repo
+	alias Ruru.Chat
+	alias Ruru.User
+	alias Ruru.Repo
+	alias Ruru.Message
 
-  def index(conn, _params) do
-    render conn, "index.html"
-  end
+	def index(conn, _params) do
+	render conn, "index.html"
+	end
 
   	def create(conn, %{"email" => email}) do
 #		user = User.create(params)
@@ -23,6 +24,28 @@ defmodule Ruru.PageController do
 		    user ->
 				json conn, loadUserChat(user, %{token: Phoenix.Token.sign(conn, "user", user.id), user: user.id, name: user.name, chat: 0})
 		end
+	end
+
+	def preload(conn, %{"token" => token, "chat" => chat_id}) do
+		case Phoenix.Token.verify(conn, "user", token, max_age: 1209600) do
+      		{:ok, user_id} -> 
+      			user = Repo.get!(User, user_id)
+      			case Chat |> Chat.by_user(user) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
+      				nil -> 
+      					:error
+  					chat ->
+  						## carico i messaggi 
+  						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do
+  							nil -> 
+  								json conn, %{}
+							messages ->
+								json conn, messages
+  						end
+      					
+      			end
+      		{:error, _} ->
+        		:error
+    	end
 	end
 
 	defp loadUserChat(user, params \\ %{}) do

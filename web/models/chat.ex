@@ -23,6 +23,11 @@ defmodule Ruru.Chat do
     |> validate_required([])
   end
   
+  def by_id(query, chat_id) do
+    from c in query,
+    where: c.id == ^chat_id
+  end
+
   def by_user(query, user) do
     from c in query,
     join: u in Ruru.User, on: c.user_id == u.id,

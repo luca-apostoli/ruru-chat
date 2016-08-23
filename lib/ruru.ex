@@ -14,6 +14,7 @@ defmodule Ruru do
       supervisor(Ruru.Endpoint, []),
       # Start your own worker by calling: Ruru.Worker.start_link(arg1, arg2, arg3)
       # worker(Ruru.Worker, [arg1, arg2, arg3]),
+      supervisor(Ruru.Presence, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

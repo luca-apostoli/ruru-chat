@@ -5,9 +5,9 @@ import {Starter} from "./starter"
 
 let Remarkable = require('remarkable')
 let $ = require("jquery")
+let _ = require("lodash")
 
 let socket;
-// Now that you are connected, you can join channels with a topic:
 let channel;
 
 var Bootstrap = React.createClass({
@@ -17,12 +17,16 @@ var Bootstrap = React.createClass({
   handleLogin: function(data) {
     this.setState({login: true, token: data.token, name: data.name, chat: data.chat, user: data.user});
   },
+  closeChat: function(){
+    this.setState({login: false})
+  },
   render: function() {
     return (
       <section>
       {(() => {
         if (this.state.login) {
           return <CommentBox 
+                  closeChat={this.closeChat}
                   token={this.state.token} 
                   name={this.state.name} 
                   chat={this.state.chat} 
@@ -57,13 +61,33 @@ var Comment = React.createClass({
 });
 
 var CommentBox = React.createClass({
+  preloadCommentsFromServer: function() {    
+    var chat = this.props.chat;
+    var token = this.props.token;
+    $.ajax("/api/messages/preload", {
+      method: "GET",
+      data: {token: token, chat: chat}, 
+      success: resp => {
+        if(!_.isEmpty(resp)) {
+          var comments = this.state.data
+          var newComments = comments
+          _.forEach(resp, (item) => {
+            var comment = {id: item.id, text: item.text, author: item.sender}
+            newComments = newComments.concat([comment])            
+          })
+          if(!_.isEmpty(newComments)) {
+            this.setState({data: newComments});
+          }
+        }
+      }
+    })
+  },  
   loadCommentsFromServer: function() {    
     channel.on("new_msg", payload => {
       var comments = this.state.data
       var comment = {id: Date.now(), text: payload.body, author: payload.author}
       var newComments = comments.concat([comment])
       this.setState({data: newComments});
-  //    messagesContainer.append(`<br/>[${Date()}] ${payload.body}`)
     })    
   },
   handleCommentSubmit: function(comment) {
@@ -76,10 +100,19 @@ var CommentBox = React.createClass({
 //    this.setState({data: newComments});
     channel.push("new_msg", {body: comment.text, author: comment.author, token: comment.token, guest: this.props.user, role: "user"})    
   },
+  channelClose: function(msg) {
+    channel.leave()
+      .receive("ok", resp => { console.log("Left successfully " + msg, resp) })
+      .receive("error", resp => { console.log("Unable to leave "+ msg, resp) })
+
+  },
+  componentWillUnmount: function() {
+    this.channelClose("user is closing the window")
+  },
   getInitialState: function() {
     return {data: [], user: this.props.user};
   },
-  componentDidMount: function() {
+  componentWillMount: function() {
     socket = new Socket("/socket", {params: {token: this.props.token}})
     socket.connect()
     // Now that you are connected, you can join channels with a topic:
@@ -90,10 +123,18 @@ var CommentBox = React.createClass({
 
     this.loadCommentsFromServer();
   },
+  componentDidMount: function() {
+    this.preloadCommentsFromServer();
+  },
   render: function() {
     return (
       <div className="commentBox">
-        <h3>Comments</h3>
+        <h4 className="ui top attached block header">
+          <div className="ui animated fade button" tabIndex="0" onClick={this.props.closeChat}>
+            <div className="visible content">Comments</div>
+            <div className="hidden content">Close this chat</div>
+          </div>
+        </h4>        
         <CommentList data={this.state.data} />
         <CommentForm token={this.props.token} name={this.props.name} onCommentSubmit={this.handleCommentSubmit} />
       </div>

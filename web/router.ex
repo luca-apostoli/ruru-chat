@@ -27,7 +27,7 @@ defmodule Ruru.Router do
   resources "/chats", ChatController
 
   scope "/admin", Ruru do
-    pipe_through :browser_auth # Use the default browser stack
+    pipe_through :browser_auth # Use the default browser stack + auth
     
     get "/chats/answer", ChatController, :answer
     post "/operators/update/:id", OperatorController, :update
@@ -53,6 +53,7 @@ defmodule Ruru.Router do
   scope "/api", Ruru do
     pipe_through :api
 
+    get "/messages/preload", PageController, :preload
     get "/create/:email", PageController, :create
   end
 end
