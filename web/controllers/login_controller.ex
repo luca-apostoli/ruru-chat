@@ -20,6 +20,7 @@ defmodule Ruru.LoginController do
           true ->
             conn
               |> put_session(:logged_operator, operator.id)
+              |> put_session(:token, Phoenix.Token.sign(conn, "operator", operator.id))
               |> put_flash(:info, "Operator logged.")
               |> redirect(to: operator_path(conn, :show, operator))
           _ ->            

@@ -7,19 +7,29 @@ defmodule Ruru.RoomChannel do
   alias Ruru.Session
   alias Ruru.Chat
   alias Ruru.Presence
+  alias Ruru.Operator
 
   def join("room:lobby", _message, socket) do
     {:ok, socket}
   end
 
-  def join("room:" <> chat_id, %{"role" => role}, socket) do
-    ## controllare se utente loggato e aggiornare la chat con operator id = utente loggato
+  def join("room:" <> chat_id, %{"role" => role, "operator" => operator}, socket) when role == "operator" do
 #    send(self, :after_join)
     case Repo.get(Chat, chat_id) do
         nil -> {:error, socket}
         chat -> 
           socket = assign(socket, :chat_id, chat_id)
-          {:ok, socket}
+          case is_number(chat.operator_id) do
+            true ->
+              {:ok, socket}
+            false ->              
+              chatOperator = Repo.get!(Operator, operator)
+              chat = Ecto.Changeset.change chat, operator_id: chatOperator.id
+              case Repo.update chat do
+                {:ok, struct}       -> {:ok, socket} # Updated with success
+                {:error, changeset} -> {:error, socket} # Something went wrong
+              end            
+          end
     end        
   end
 
@@ -37,9 +47,9 @@ defmodule Ruru.RoomChannel do
 
   #aggiungere id utente e ruolo tra i parametri ricevuti
   def handle_in("new_msg", %{"body" => body, "author" => author, "guest" => guest, "role" => role}, socket) do
-    chat_id = socket.assigns[:chat_id]
-    changeset = Message.changeset(%Message{}, %{text: body, sender: role, sender_id: guest, chat_id: chat_id})
-    Repo.insert!(changeset)
+    chat = Repo.get!(Chat, socket.assigns[:chat_id])
+    changeset = Message.changeset(%Message{}, %{text: body, sender: role, sender_id: guest, chat_id: chat.id})
+    Repo.insert!(changeset)    
     broadcast! socket, "new_msg", %{body: body, author: author, role: role, guest: guest}
     {:noreply, socket}
   end

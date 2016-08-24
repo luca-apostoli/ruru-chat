@@ -17,7 +17,7 @@ defmodule Ruru.Message do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:text, :sender, :sender_id])
+    |> cast(params, [:text, :sender, :sender_id, :chat_id])
     |> validate_required([:text, :sender, :sender_id])
   end
 

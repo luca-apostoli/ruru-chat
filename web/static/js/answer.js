@@ -36,10 +36,10 @@ var AnswerBootstrap = React.createClass({
     this.loadUsersFromServer();
   },
   loadMessageChannel: function(chat_id, guest) {
-    messageSocket = new Socket("/socket", {params: {role: "operator"}})
+    messageSocket = new Socket("/socket", {params: {role: "operator", token: window.operatorToken}})
     messageSocket.connect()
     // Now that you are connected, you can join channels with a topic:
-    messageChannel = messageSocket.channel("room:" + chat_id, {role: "operator"})
+    messageChannel = messageSocket.channel("room:" + chat_id, {role: "operator", operator: window.operatorID})
     messageChannel.join()
       .receive("ok", resp => { console.log("Joined successfully", resp) })
       .receive("error", resp => { console.log("Unable to join", resp) })

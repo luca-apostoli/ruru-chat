@@ -2,6 +2,7 @@ defmodule Ruru.UserSocket do
   use Phoenix.Socket
 
   alias Ruru.User
+  alias Ruru.Operator
   alias Ruru.Repo  
 
   ## Channels
@@ -22,8 +23,15 @@ defmodule Ruru.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(%{"role" => role}, socket) do
-    {:ok, socket}    
+  def connect(%{"role" => role, "token" => token}, socket) do
+    # Max age of 2 weeks (1209600 seconds)
+    case Phoenix.Token.verify(socket, "operator", token, max_age: 1209600) do
+      {:ok, operator_id} ->
+        socket = assign(socket, :operator, Repo.get!(Operator, operator_id))
+        {:ok, socket}
+      {:error, _} ->
+        :error
+    end
   end
 
   def connect(%{"token" => token}, socket) do

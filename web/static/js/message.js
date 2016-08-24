@@ -47,14 +47,11 @@ var Comment = React.createClass({
     var rawMarkup = md.render(this.props.children.toString());
     return { __html: rawMarkup };
   },
-
   render: function() {
     return (
-      <div className="comment item">
-        <div className="content">
-          <span className="header" style={{fontWeight: "bold"}}>{this.props.author}</span>
-          <span dangerouslySetInnerHTML={this.rawMarkup()} />
-        </div>
+      <div className="comment column">
+        <h4 className="ui top attached block header">{this.props.author}</h4>
+        <div className="ui bottom attached segment" dangerouslySetInnerHTML={this.rawMarkup()} />
       </div>
     );
   }

@@ -10,4 +10,6 @@ defmodule Ruru.Session do
 
 	def is_logged?(conn), do: !!current_operator(conn) 
 
+	def get_token(conn), do: Plug.Conn.get_session(conn, :token)
+
 end

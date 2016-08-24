@@ -1,6 +1,7 @@
 <script type="text/javascript">
 		window.operatorID = <%= current_operator(@conn).id %>;
 		window.operatorEmail = '<%= current_operator(@conn).email %>';
+		window.operatorToken = '<%= get_token(@conn) %>';
 </script>	
 <section class="ui text container">
 	<div id="answer"></div>
