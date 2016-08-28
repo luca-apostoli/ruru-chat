@@ -21,7 +21,7 @@ defmodule Ruru.Router do
   pipeline :api do
     plug :accepts, ["json"]
   end
-
+  
   resources "/users", UserController
   resources "/messages", MessageController
   resources "/chats", ChatController
@@ -53,6 +53,8 @@ defmodule Ruru.Router do
   scope "/api", Ruru do
     pipe_through :api
 
+    get "/operator/users/preload", PageController, :auth_preload
+    get "/operator/messages/preload", PageController, :auth_preload
     get "/messages/preload", PageController, :preload
     get "/create/:email", PageController, :create
   end

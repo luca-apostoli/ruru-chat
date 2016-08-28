@@ -1,6 +1,8 @@
 defmodule Ruru.Operator do
   use Ruru.Web, :model
 
+  @derive {Poison.Encoder, only: [:id, :name]}
+
   schema "operators" do
     field :name, :string
     field :email, :string

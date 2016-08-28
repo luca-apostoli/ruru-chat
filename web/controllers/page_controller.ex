@@ -3,11 +3,12 @@ defmodule Ruru.PageController do
 
 	alias Ruru.Chat
 	alias Ruru.User
+	alias Ruru.Operator
 	alias Ruru.Repo
 	alias Ruru.Message
 
 	def index(conn, _params) do
-	render conn, "index.html"
+		render conn, "index.html"
 	end
 
   	def create(conn, %{"email" => email}) do
@@ -24,6 +25,43 @@ defmodule Ruru.PageController do
 		    user ->
 				json conn, loadUserChat(user, %{token: Phoenix.Token.sign(conn, "user", user.id), user: user.id, name: user.name, chat: 0})
 		end
+	end
+
+	def auth_preload(conn, %{"token" => token, "chat" => chat_id, "target" => target}) when target == "messages" do		
+		case Phoenix.Token.verify(conn, "operator", token, max_age: 1209600) do
+      		{:ok, operator_id} -> 
+      			operator = Repo.get!(Operator, operator_id)
+      			case Chat |> Chat.by_operator(operator) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
+      				nil -> 
+      					:error
+  					chat ->
+  						## carico i messaggi 
+  						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do
+  							nil -> 
+  								json conn, %{}
+							messages ->
+								json conn, messages
+  						end
+      					
+      			end
+      		{:error, _} ->
+        		:error
+    	end
+	end
+
+	def auth_preload(conn, %{"token" => token, "target" => target}) when target == "users" do
+		case Phoenix.Token.verify(conn, "operator", token, max_age: 1209600) do
+      		{:ok, operator_id} -> 
+      			operator = Repo.get!(Operator, operator_id)
+      			case Chat |> Chat.open |> Chat.with_users |> Chat.with_operators |> Chat.sorted |> Repo.all do
+      				nil -> 
+      					:error
+  					users ->
+						json conn, users
+      			end
+      		{:error, _} ->
+        		:error
+    	end
 	end
 
 	def preload(conn, %{"token" => token, "chat" => chat_id}) do
@@ -46,7 +84,7 @@ defmodule Ruru.PageController do
       		{:error, _} ->
         		:error
     	end
-	end
+	end	
 
 	defp loadUserChat(user, params \\ %{}) do
 	    case Chat |> Chat.by_user(user) |> Chat.open |> Chat.sorted |> first |> Repo.one do

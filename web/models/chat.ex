@@ -3,6 +3,8 @@ defmodule Ruru.Chat do
 
   import Ecto.Query
 
+  @derive {Poison.Encoder, only: [:id, :user, :operator, :status, :inserted_at]}
+
   schema "chats" do
 
     field :status, :boolean, default: false
@@ -23,6 +25,14 @@ defmodule Ruru.Chat do
     |> validate_required([])
   end
   
+  def with_users(query) do
+    from q in query, preload: [:user]
+  end
+
+  def with_operators(query) do
+    from q in query, preload: [:operator]
+  end
+
   def by_id(query, chat_id) do
     from c in query,
     where: c.id == ^chat_id
@@ -32,6 +42,12 @@ defmodule Ruru.Chat do
     from c in query,
     join: u in Ruru.User, on: c.user_id == u.id,
     where: u.id == ^user.id
+  end
+
+  def by_operator(query, operator) do
+    from c in query,
+    join: o in Ruru.Operator, on: c.operator_id == o.id,
+    where: o.id == ^operator.id
   end
 
   def open(query) do

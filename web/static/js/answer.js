@@ -24,6 +24,27 @@ var AnswerBootstrap = React.createClass({
       this.setState({users: newUsers});
     })
   },
+  preloadUsersFromServer: function() {    
+    var token = window.operatorToken;
+    $.ajax("/api/operator/users/preload", {
+      method: "GET",
+      data: {token: token, target: "users"}, 
+      success: resp => {
+        if(!_.isEmpty(resp)) {
+          var newUsers = this.state.users
+          _.forEach(resp, (item) => {  
+            if(!_.isEmpty(item.user)) {
+              var user = {id: item.user.id, name: item.user.name, chat: item.id}
+              newUsers = newUsers.concat([user])            
+            }
+          })
+          if(!_.isEmpty(newUsers)) {
+            this.setState({users: newUsers});
+          }
+        }
+      }
+    })
+  },
   componentDidMount: function() {
     userSocket = new Socket("/answersocket")
     userSocket.connect()
@@ -32,8 +53,8 @@ var AnswerBootstrap = React.createClass({
     userChannel.join()
       .receive("ok", resp => { console.log("Joined successfully", resp) })
       .receive("error", resp => { console.log("Unable to join", resp) })
-
-    this.loadUsersFromServer();
+    this.preloadUsersFromServer();
+    this.loadUsersFromServer();   
   },
   loadMessageChannel: function(chat_id, guest) {
     messageSocket = new Socket("/socket", {params: {role: "operator", token: window.operatorToken}})
@@ -89,11 +110,37 @@ var AnswerBootstrap = React.createClass({
         this.setState({chats: chats}, () => {
           // subscription to channel          
           this.loadMessageChannel(user.chat, user.name)
+          this.preloadCommentsFromServer();
         });        
       } else {
-        this.setState({chats: chats});      
+        this.setState({chats: chats}, () => {
+          this.preloadCommentsFromServer();
+        });
       }
     });
+  },
+  preloadCommentsFromServer: function() {    
+    var chat = this.state.selected.chat;
+    var token = window.operatorToken;
+    $.ajax("/api/operator/messages/preload", {
+      method: "GET",
+      data: {token: token, chat: chat, target: "messages"}, 
+      success: resp => {
+        var oldchats = this.state.chats;
+        if(!_.isEmpty(resp) && _.has(oldchats, chat)) {
+          var comments = oldchats[chat].messages;
+          var newComments = comments
+          _.forEach(resp, (item) => {
+            var comment = {id: item.id, text: item.text, author: item.sender}
+            newComments = newComments.concat([comment])            
+          })
+          if(!_.isEmpty(newComments)) {
+            oldchats[chat].messages = newComments;
+            this.setState({chats: oldchats});
+          }
+        }
+      }
+    })
   },
   submitMessage: function(message) {
     var oldchats = this.state.chats;

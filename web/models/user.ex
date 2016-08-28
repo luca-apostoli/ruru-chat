@@ -3,6 +3,8 @@ defmodule Ruru.User do
   
   import Ecto.Query
 
+  @derive {Poison.Encoder, only: [:id, :name]}
+
   schema "users" do
     field :name, :string
     field :email, :string
