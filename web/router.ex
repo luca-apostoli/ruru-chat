@@ -55,7 +55,7 @@ defmodule Ruru.Router do
 
     get "/operator/users/preload", PageController, :auth_preload
     get "/operator/messages/preload", PageController, :auth_preload
-    get "/messages/preload", PageController, :preload
+    get "/user/messages/preload", PageController, :usr_preload
     get "/create/:email", PageController, :create
   end
 end

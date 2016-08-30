@@ -23,6 +23,21 @@ var AnswerBootstrap = React.createClass({
       var newUsers = users.concat([usr])
       this.setState({users: newUsers});
     })
+
+    userChannel.on("usr_left", payload => {
+      var users = this.state.users
+      var selected = this.state.selected
+      if(!_.isEmpty(users)) {
+        users = _.remove(users, (user) => {
+          return (user.chat !== Number(payload.chat_id));
+        })
+        if(selected && selected.chat === Number(payload.chat_id)) {
+          selected = false;
+        }
+      }
+      this.setState({users: users, selected: selected});
+    })
+
   },
   preloadUsersFromServer: function() {    
     var token = window.operatorToken;
@@ -94,7 +109,7 @@ var AnswerBootstrap = React.createClass({
       var found = false;
       var oldchats = this.state.chats;
       var chats = oldchats;
-      _.forEach(oldchats, function (item, key) {
+      _.forEach(oldchats, (item, key) => {
         if(key === user.chat && oldchats[key].chat === user.chat){
           found = true;
           oldchats[key].status = 'active';    
@@ -105,11 +120,11 @@ var AnswerBootstrap = React.createClass({
         }
       })
       if(!found) {
-        var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null};
+        var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null, preloaded: false};
         chats[user.chat] = chat;
         this.setState({chats: chats}, () => {
           // subscription to channel          
-          this.loadMessageChannel(user.chat, user.name)
+          this.loadMessageChannel(user.chat, user.name)          
           this.preloadCommentsFromServer();
         });        
       } else {
@@ -122,25 +137,28 @@ var AnswerBootstrap = React.createClass({
   preloadCommentsFromServer: function() {    
     var chat = this.state.selected.chat;
     var token = window.operatorToken;
-    $.ajax("/api/operator/messages/preload", {
-      method: "GET",
-      data: {token: token, chat: chat, target: "messages"}, 
-      success: resp => {
-        var oldchats = this.state.chats;
-        if(!_.isEmpty(resp) && _.has(oldchats, chat)) {
-          var comments = oldchats[chat].messages;
-          var newComments = comments
-          _.forEach(resp, (item) => {
-            var comment = {id: item.id, text: item.text, author: item.sender}
-            newComments = newComments.concat([comment])            
-          })
-          if(!_.isEmpty(newComments)) {
-            oldchats[chat].messages = newComments;
-            this.setState({chats: oldchats});
+    var oldchats = this.state.chats;
+    if (!oldchats[chat].preloaded) {
+      $.ajax("/api/operator/messages/preload", {
+        method: "GET",
+        data: {token: token, chat: chat, target: "messages"}, 
+        success: resp => {          
+          oldchats[chat].preloaded = true;
+          if(!_.isEmpty(resp) && _.has(oldchats, chat)) {
+            var comments = oldchats[chat].messages;
+            var newComments = comments
+            _.forEach(resp, (item) => {
+              var comment = {id: item.id, text: item.text, author: item.sender}
+              newComments = newComments.concat([comment])            
+            })            
+            if(!_.isEmpty(newComments)) {
+              oldchats[chat].messages = newComments;              
+            }
           }
+          this.setState({chats: oldchats});
         }
-      }
-    })
+      })
+    }
   },
   submitMessage: function(message) {
     var oldchats = this.state.chats;
@@ -160,7 +178,9 @@ var AnswerBootstrap = React.createClass({
     }
     return (
       <div className="ui two column grid">
-        <div className="four wide column"><UsersList users={this.state.users} handleClick={this.handleClickOnUser}/></div>
+        <div className="four wide column">
+          <UsersList users={this.state.users} handleClick={this.handleClickOnUser}/>
+        </div>
         <div className="ten wide column">
           {(() => {
             if (this.state.selected) {

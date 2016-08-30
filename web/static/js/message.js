@@ -61,7 +61,7 @@ var CommentBox = React.createClass({
   preloadCommentsFromServer: function() {    
     var chat = this.props.chat;
     var token = this.props.token;
-    $.ajax("/api/messages/preload", {
+    $.ajax("/api/user/messages/preload", {
       method: "GET",
       data: {token: token, chat: chat}, 
       success: resp => {
@@ -98,7 +98,7 @@ var CommentBox = React.createClass({
     channel.push("new_msg", {body: comment.text, author: comment.author, token: comment.token, guest: this.props.user, role: "user"})    
   },
   channelClose: function(msg) {
-    channel.leave()
+    channel.push("usr_leave", {role: "user"})
       .receive("ok", resp => { console.log("Left successfully " + msg, resp) })
       .receive("error", resp => { console.log("Unable to leave "+ msg, resp) })
 

@@ -1,6 +1,8 @@
 defmodule Ruru.PageController do
 	use Ruru.Web, :controller
 
+	require Logger
+
 	alias Ruru.Chat
 	alias Ruru.User
 	alias Ruru.Operator
@@ -33,7 +35,7 @@ defmodule Ruru.PageController do
       			operator = Repo.get!(Operator, operator_id)
       			case Chat |> Chat.by_operator(operator) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
       				nil -> 
-      					:error
+      					json conn, %{}
   					chat ->
   						## carico i messaggi 
   						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do
@@ -49,13 +51,13 @@ defmodule Ruru.PageController do
     	end
 	end
 
-	def auth_preload(conn, %{"token" => token, "target" => target}) when target == "users" do
+	def auth_preload(conn, %{"token" => token, "target" => target}) do
 		case Phoenix.Token.verify(conn, "operator", token, max_age: 1209600) do
       		{:ok, operator_id} -> 
       			operator = Repo.get!(Operator, operator_id)
       			case Chat |> Chat.open |> Chat.with_users |> Chat.with_operators |> Chat.sorted |> Repo.all do
       				nil -> 
-      					:error
+      					json conn, %{}
   					users ->
 						json conn, users
       			end
@@ -64,13 +66,16 @@ defmodule Ruru.PageController do
     	end
 	end
 
-	def preload(conn, %{"token" => token, "chat" => chat_id}) do
+	def usr_preload(conn, %{"token" => token, "chat" => chat_id}) do
+		Logger.debug chat_id
 		case Phoenix.Token.verify(conn, "user", token, max_age: 1209600) do
       		{:ok, user_id} -> 
       			user = Repo.get!(User, user_id)
       			case Chat |> Chat.by_user(user) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
+      				:error -> 
+      					json conn, %{}
       				nil -> 
-      					:error
+      					json conn, %{}
   					chat ->
   						## carico i messaggi 
   						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do

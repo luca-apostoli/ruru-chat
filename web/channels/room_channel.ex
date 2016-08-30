@@ -1,6 +1,8 @@
 defmodule Ruru.RoomChannel do
   use Phoenix.Channel
 
+  intercept ["new_msg"]
+
   alias Ruru.User
   alias Ruru.Message
   alias Ruru.Repo
@@ -41,6 +43,9 @@ defmodule Ruru.RoomChannel do
           {:error, socket}
         user -> 
           socket = assign(socket, :chat_id, chat_id)
+          chat = Repo.get!(Chat, chat_id)
+          chat = Ecto.Changeset.change chat, status: true
+          Repo.update!(chat)
           {:ok, socket}
     end    
   end
@@ -52,6 +57,15 @@ defmodule Ruru.RoomChannel do
     Repo.insert!(changeset)    
     broadcast! socket, "new_msg", %{body: body, author: author, role: role, guest: guest}
     {:noreply, socket}
+  end
+
+  def handle_in("usr_leave", %{"role" => role}, socket) do
+    chat_id = socket.assigns[:chat_id]
+    chat = Repo.get!(Chat, chat_id)
+    chat = Ecto.Changeset.change chat, status: false
+    Repo.update!(chat)    
+    Ruru.Endpoint.broadcast_from! self(), "answer:users", "usr_left", %{chat_id: chat_id}
+    {:stop, :shutdown, socket}
   end
 
   def handle_out("new_msg", payload, socket) do

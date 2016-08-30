@@ -52,7 +52,7 @@ defmodule Ruru.Chat do
 
   def open(query) do
     from c in query,
-    where: c.status == false
+    where: c.status == true
   end
 
   def sorted(query) do

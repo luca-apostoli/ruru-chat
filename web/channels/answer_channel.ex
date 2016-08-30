@@ -1,6 +1,8 @@
 defmodule Ruru.AnswerChannel do
   use Phoenix.Channel
 
+  intercept ["new_usr", "usr_left"]
+
   def join("answer:users", _message, socket) do
     {:ok, socket}
   end
@@ -14,8 +16,18 @@ defmodule Ruru.AnswerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("usr_left", %{"chat" => chat_id}, socket) do
+    broadcast! socket, "usr_left", %{chat: chat_id}
+    {:noreply, socket}
+  end
+
   def handle_out("new_usr", payload, socket) do
     push socket, "new_usr", payload
+    {:noreply, socket}
+  end
+  
+  def handle_out("usr_left", payload, socket) do
+    push socket, "usr_left", payload
     {:noreply, socket}
   end
   
