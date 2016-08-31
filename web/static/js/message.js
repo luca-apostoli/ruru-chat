@@ -69,8 +69,15 @@ var CommentBox = React.createClass({
           var comments = this.state.data
           var newComments = comments
           _.forEach(resp, (item) => {
-            var comment = {id: item.id, text: item.text, author: item.sender}
-            newComments = newComments.concat([comment])            
+            var comment = {};
+            if(_.findIndex(newComments, ['id', item.id]) < 0) {
+              if (!_.isEmpty(item.user)) { 
+                comment = {id: item.id, text: item.text, author: item.user.name}
+              } else {
+                comment = {id: item.id, text: item.text, author: item.operator.name}
+              }            
+              newComments = newComments.concat([comment])
+            }
           })
           if(!_.isEmpty(newComments)) {
             this.setState({data: newComments});
@@ -82,9 +89,11 @@ var CommentBox = React.createClass({
   loadCommentsFromServer: function() {    
     channel.on("new_msg", payload => {
       var comments = this.state.data
-      var comment = {id: Date.now(), text: payload.body, author: payload.author}
-      var newComments = comments.concat([comment])
-      this.setState({data: newComments});
+      if(_.findIndex(comments, ['id', payload.id]) < 0) {
+        var comment = {id: payload.id, text: payload.body, author: payload.author}
+        var newComments = comments.concat([comment])
+        this.setState({data: newComments});
+      }
     })    
   },
   handleCommentSubmit: function(comment) {

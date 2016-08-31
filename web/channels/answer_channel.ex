@@ -1,6 +1,9 @@
 defmodule Ruru.AnswerChannel do
   use Phoenix.Channel
 
+  alias Ruru.Repo
+  alias Ruru.User
+
   intercept ["new_usr", "usr_left"]
 
   def join("answer:users", _message, socket) do
@@ -12,7 +15,8 @@ defmodule Ruru.AnswerChannel do
   end
 
   def handle_in("new_usr", %{"name" => name, "chat" => chat}, socket) do
-    broadcast! socket, "new_usr", %{chat: chat, name: name}
+    user = Repo.get!(User, {:chats, chat})
+    broadcast! socket, "new_usr", %{id: user.id, chat: chat, name: name}
     {:noreply, socket}
   end
 

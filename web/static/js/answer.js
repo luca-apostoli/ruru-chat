@@ -19,9 +19,11 @@ var AnswerBootstrap = React.createClass({
   loadUsersFromServer: function() {
     userChannel.on("new_usr", payload => {
       var users = this.state.users
-      var usr = {id: Date.now(), name: payload.name, chat: payload.chat}
-      var newUsers = users.concat([usr])
-      this.setState({users: newUsers});
+      if(_.findIndex(users, ['id', payload.id]) < 0) {
+        var usr = {id: payload.id, name: payload.name, chat: payload.chat}
+        var newUsers = users.concat([usr])
+        this.setState({users: newUsers});
+      }
     })
 
     userChannel.on("usr_left", payload => {
@@ -49,8 +51,10 @@ var AnswerBootstrap = React.createClass({
           var newUsers = this.state.users
           _.forEach(resp, (item) => {  
             if(!_.isEmpty(item.user)) {
-              var user = {id: item.user.id, name: item.user.name, chat: item.id}
-              newUsers = newUsers.concat([user])            
+              if(_.findIndex(newUsers, ['id', item.id]) < 0) {
+                var user = {id: item.user.id, name: item.user.name, chat: item.id}
+                newUsers = newUsers.concat([user])            
+              }
             }
           })
           if(!_.isEmpty(newUsers)) {
@@ -148,7 +152,12 @@ var AnswerBootstrap = React.createClass({
             var comments = oldchats[chat].messages;
             var newComments = comments
             _.forEach(resp, (item) => {
-              var comment = {id: item.id, text: item.text, author: item.sender}
+              var comment = {};
+              if (!_.isEmpty(item.user)) { 
+                comment = {id: item.id, text: item.text, author: item.user.name}
+              } else {
+                comment = {id: item.id, text: item.text, author: item.operator.name}
+              }      
               newComments = newComments.concat([comment])            
             })            
             if(!_.isEmpty(newComments)) {

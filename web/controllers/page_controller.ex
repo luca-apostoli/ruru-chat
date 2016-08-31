@@ -38,7 +38,7 @@ defmodule Ruru.PageController do
       					json conn, %{}
   					chat ->
   						## carico i messaggi 
-  						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do
+  						case Message |> Message.by_chat(chat) |> Message.with_users |> Message.with_operators |> Message.sorted |> Repo.all do
   							nil -> 
   								json conn, %{}
 							messages ->
@@ -78,7 +78,7 @@ defmodule Ruru.PageController do
       					json conn, %{}
   					chat ->
   						## carico i messaggi 
-  						case Message |> Message.by_chat(chat) |> Message.sorted |> Repo.all do
+  						case Message |> Message.by_chat(chat) |> Message.with_users |> Message.with_operators |> Message.sorted |> Repo.all do
   							nil -> 
   								json conn, %{}
 							messages ->
@@ -97,13 +97,13 @@ defmodule Ruru.PageController do
 	        chat = Chat.changeset(%Chat{}, %{user_id: user.id})
 	        case Repo.insert(chat) do
 	        	{:ok, newchat} -> 
-	        		Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{name: user.name, chat: newchat.id}
+	        		Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: newchat.id}
 	        		%{params | chat: newchat.id}
 	    		{:error, _details} ->
 	    			:error
 	        end
 	      loadedchat ->
-	      	Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{name: user.name, chat: loadedchat.id}
+	      	Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: loadedchat.id}
 	  		%{params | chat: loadedchat.id}
 	    end
 	end

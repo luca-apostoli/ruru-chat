@@ -1,12 +1,12 @@
 defmodule Ruru.Message do
   use Ruru.Web, :model
 
-  @derive {Poison.Encoder, only: [:id, :text, :sender, :inserted_at]}
+  @derive {Poison.Encoder, only: [:id, :text, :user, :operator, :inserted_at]}
 
   schema "messages" do
     field :text, :string
-    field :sender, :string
-    field :sender_id, :integer
+    belongs_to :user, Ruru.User, foreign_key: :user_id
+    belongs_to :operator, Ruru.Operator, foreign_key: :operator_id
     belongs_to :chat, Ruru.Chat, foreign_key: :chat_id
 
     timestamps()
@@ -17,8 +17,16 @@ defmodule Ruru.Message do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:text, :sender, :sender_id, :chat_id])
-    |> validate_required([:text, :sender, :sender_id])
+    |> cast(params, [:text, :user_id, :operator_id, :chat_id])
+    |> validate_required([:text, :chat_id])
+  end
+
+  def with_users(query) do
+    from q in query, preload: [:user]
+  end
+
+  def with_operators(query) do
+    from q in query, preload: [:operator]
   end
 
   def by_chat(query, chat) do
@@ -29,19 +37,19 @@ defmodule Ruru.Message do
 
   def by_user(query, user) do
     from m in query,
-    join: u in Ruru.User, on: m.sender_id == u.id,
-    where: u.id == ^user.id and m.sender == "user"
+    join: u in Ruru.User, on: m.user_id == u.id,
+    where: u.id == ^user.id
   end
 
   def by_operator(query, operator) do
     from m in query,
-    join: o in Ruru.Operator, on: m.sender_id == o.id,
-    where: o.id == ^operator.id and m.sender == "operator"
+    join: o in Ruru.Operator, on: m.operator_id == o.id,
+    where: o.id == ^operator.id
   end
 
   def sorted(query) do
     from c in query,
-    order_by: [desc: c.inserted_at]
+    order_by: [asc: c.inserted_at]
   end
 
 end

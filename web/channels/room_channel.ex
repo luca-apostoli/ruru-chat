@@ -51,13 +51,32 @@ defmodule Ruru.RoomChannel do
   end
 
   #aggiungere id utente e ruolo tra i parametri ricevuti
-  def handle_in("new_msg", %{"body" => body, "author" => author, "guest" => guest, "role" => role}, socket) do
+  def handle_in("new_msg", %{"body" => body, "author" => author, "guest" => guest, "role" => role}, socket) when role == "user" do
     chat = Repo.get!(Chat, socket.assigns[:chat_id])
-    changeset = Message.changeset(%Message{}, %{text: body, sender: role, sender_id: guest, chat_id: chat.id})
+    changeset = Message.changeset(%Message{}, %{text: body, user_id: guest, chat_id: chat.id})
+    case Repo.insert(changeset) do
+      {:ok, message} ->
+        broadcast! socket, "new_msg", %{id: message.id, body: body, author: author, role: role, guest: guest}
+        {:noreply, socket}
+      {:error, _msg} ->
+        {:error, socket}
+    end        
+  end
+  
+  def handle_in("new_msg", %{"body" => body, "author" => author, "guest" => guest, "role" => role}, socket) when role == "operator" do
+    chat = Repo.get!(Chat, socket.assigns[:chat_id])
+    changeset = Message.changeset(%Message{}, %{text: body, operator_id: guest, chat_id: chat.id})
     Repo.insert!(changeset)    
-    broadcast! socket, "new_msg", %{body: body, author: author, role: role, guest: guest}
+    case Repo.insert(changeset) do
+      {:ok, message} ->
+        broadcast! socket, "new_msg", %{id: message.id, body: body, author: author, role: role, guest: guest}
+        {:noreply, socket}
+      {:error, _msg} ->
+        {:error, socket}
+    end
     {:noreply, socket}
   end
+
 
   def handle_in("usr_leave", %{"role" => role}, socket) do
     chat_id = socket.assigns[:chat_id]
