@@ -97,13 +97,13 @@ defmodule Ruru.PageController do
 	        chat = Chat.changeset(%Chat{}, %{user_id: user.id})
 	        case Repo.insert(chat) do
 	        	{:ok, newchat} -> 
-	        		Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: newchat.id}
+	        		Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: newchat.id, operator: 0}
 	        		%{params | chat: newchat.id}
 	    		{:error, _details} ->
 	    			:error
 	        end
 	      loadedchat ->
-	      	Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: loadedchat.id}
+	      	Ruru.Endpoint.broadcast! "answer:users", "new_usr", %{id: user.id, name: user.name, chat: loadedchat.id, operator: loadedchat.operator_id}
 	  		%{params | chat: loadedchat.id}
 	    end
 	end

@@ -47,11 +47,27 @@ var Comment = React.createClass({
     var rawMarkup = md.render(this.props.children.toString());
     return { __html: rawMarkup };
   },
+  topOwnerClass: function() {
+    var topClass = ' ui '; 
+    if (!this.props.mine) {
+      topClass += ' right aligned blue ';
+    }
+    topClass += ' top attached block header';
+    return topClass;
+  },
+  bottomOwnerClass: function() {
+    var bottomClass = 'ui ';
+    if (!this.props.mine) {
+      bottomClass += ' right aligned ';
+    }
+    bottomClass += ' bottom attached segment';
+    return bottomClass;
+  },
   render: function() {
     return (
       <div className="comment column">
-        <h4 className="ui top attached block header">{this.props.author}</h4>
-        <div className="ui bottom attached segment" dangerouslySetInnerHTML={this.rawMarkup()} />
+        <h4 className={this.topOwnerClass()}>{this.props.author}</h4>
+        <div className={this.bottomOwnerClass()} dangerouslySetInnerHTML={this.rawMarkup()} />
       </div>
     );
   }
@@ -72,9 +88,9 @@ var CommentBox = React.createClass({
             var comment = {};
             if(_.findIndex(newComments, ['id', item.id]) < 0) {
               if (!_.isEmpty(item.user)) { 
-                comment = {id: item.id, text: item.text, author: item.user.name}
+                comment = {id: item.id, text: item.text, author: item.user.name, mine: true}
               } else {
-                comment = {id: item.id, text: item.text, author: item.operator.name}
+                comment = {id: item.id, text: item.text, author: item.operator.name, mine: false}
               }            
               newComments = newComments.concat([comment])
             }
@@ -90,7 +106,11 @@ var CommentBox = React.createClass({
     channel.on("new_msg", payload => {
       var comments = this.state.data
       if(_.findIndex(comments, ['id', payload.id]) < 0) {
-        var comment = {id: payload.id, text: payload.body, author: payload.author}
+        var mine = false;
+        if(!_.isEmpty(payload.user)) {
+          mine = true;
+        }
+        var comment = {id: payload.id, text: payload.body, author: payload.author, mine: mine}
         var newComments = comments.concat([comment])
         this.setState({data: newComments});
       }
@@ -152,7 +172,7 @@ var CommentList = React.createClass({
   render: function() {
     var commentNodes = this.props.data.map(function(comment) {
       return (        
-        <Comment author={comment.author} key={comment.id}>
+        <Comment author={comment.author} key={comment.id} mine={comment.mine}>
           {comment.text}
         </Comment>
       );
