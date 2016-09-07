@@ -107,7 +107,7 @@ var CommentBox = React.createClass({
       var comments = this.state.data
       if(_.findIndex(comments, ['id', payload.id]) < 0) {
         var mine = false;
-        if(!_.isEmpty(payload.user)) {
+        if(payload.role === 'user') {
           mine = true;
         }
         var comment = {id: payload.id, text: payload.body, author: payload.author, mine: mine}

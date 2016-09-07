@@ -17,6 +17,7 @@ defmodule Ruru.RoomChannel do
 
   def join("room:" <> chat_id, %{"role" => role, "operator" => operator}, socket) when role == "operator" do
 #    send(self, :after_join)
+# broadcast to answer channel the event opt_owned
     case Repo.get(Chat, chat_id) do
         nil -> {:error, socket}
         chat -> 
@@ -28,8 +29,11 @@ defmodule Ruru.RoomChannel do
               chatOperator = Repo.get!(Operator, operator)
               chat = Ecto.Changeset.change chat, operator_id: chatOperator.id
               case Repo.update chat do
-                {:ok, struct}       -> {:ok, socket} # Updated with success
-                {:error, changeset} -> {:error, socket} # Something went wrong
+                {:ok, struct} -> 
+                  Ruru.Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chatOperator.id}
+                  {:ok, socket} # Updated with success
+                {:error, changeset} -> 
+                  {:error, socket} # Something went wrong
               end            
           end
     end        

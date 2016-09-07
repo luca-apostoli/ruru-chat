@@ -40,6 +40,19 @@ var AnswerBootstrap = React.createClass({
       this.setState({users: this.sortUsers(users), selected: selected});
     })
 
+  userChannel.on("opt_owned", payload => {
+      var users = this.state.users
+      if(!_.isEmpty(users)) {
+        users = _.forEach(users, (user) => {
+          if (user.chat === Number(payload.chat)) {
+            user.operator = payload.operator;
+          }
+        })
+        this.setState({users: this.sortUsers(users)});
+      }      
+    })
+
+
   },
   preloadUsersFromServer: function() {    
     var token = window.operatorToken;
@@ -107,7 +120,7 @@ var AnswerBootstrap = React.createClass({
         if(_.has(oldchats, chat_id)) {
           var comments = oldchats[chat_id].messages
           var mine = false;
-          if(!_.isEmpty(payload.operator) && payload.operator.id === window.operatorID) {
+          if(payload.role === 'operator' && Number(payload.guest) === Number(window.operatorID)) {
             mine = true;
           }
           var comment = {id: payload.id, text: payload.body, author: payload.author, mine: mine}
@@ -132,16 +145,17 @@ var AnswerBootstrap = React.createClass({
       var found = false;
       var oldchats = this.state.chats;
       var chats = oldchats;
-      _.forEach(oldchats, (item, key) => {
-        if(key === user.chat && oldchats[key].chat === user.chat){
-          found = true;
-          oldchats[key].status = 'active';    
-        } else {
-          if(!_.isEmpty(oldchats[key])) {
+      for(var key in oldchats){
+        if(!_.isEmpty(oldchats[key])) {
+          var item = oldchats[key];
+          if(Number(key) === user.chat && item.chat === user.chat){
+            found = true;
+            oldchats[key].status = 'active';    
+          } else {          
             oldchats[key].status = '';
           }
         }
-      })
+      }
       if(!found) {
         var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null, preloaded: false};
         chats[user.chat] = chat;
@@ -155,6 +169,7 @@ var AnswerBootstrap = React.createClass({
           this.preloadCommentsFromServer();
         });
       }
+      this.forceUpdate();
     });
   },
   preloadCommentsFromServer: function() {    
