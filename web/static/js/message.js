@@ -178,7 +178,7 @@ var CommentList = React.createClass({
       );
     });
     return (
-      <div className="commentList ui list">
+      <div className="messageList ui list">
         {commentNodes}
       </div>
     );

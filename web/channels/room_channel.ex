@@ -39,8 +39,7 @@ defmodule Ruru.RoomChannel do
     end        
   end
 
-  def join("room:" <> chat_id, %{"guest" => guest, "role" => role}, socket) do
-#    send(self, :after_join)
+  def join("room:" <> chat_id, %{"guest" => guest, "role" => role}, socket) do    
     ## controllare se chat id e guest id corrisopndono, role è user o operator
     case User |> User.by_username(guest) |> Repo.one do
         nil -> 
@@ -50,6 +49,7 @@ defmodule Ruru.RoomChannel do
           chat = Repo.get!(Chat, chat_id)
           chat = Ecto.Changeset.change chat, status: true
           Repo.update!(chat)
+          send(self, :after_join)
           {:ok, socket}
     end    
   end
@@ -96,13 +96,13 @@ defmodule Ruru.RoomChannel do
     {:noreply, socket}
   end
 
-#  def handle_info(:after_join, socket) do
-#    push socket, "presence_state", Presence.list(socket)
-#    {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
-#      online_at: inspect(System.system_time(:seconds))
-#    })
-#    {:noreply, socket}
-#  end
+  def handle_info(:after_join, socket) do
+    push socket, "presence_state", Presence.list(socket)
+    {:ok, _} = Presence.track(socket, socket.assigns[:user].id, %{
+      online_at: inspect(System.system_time(:seconds))
+    })
+    {:noreply, socket}
+  end
 
   def terminate(msg, socket) do
     ## cambiare stato al canale nel db

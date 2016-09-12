@@ -1,5 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom"
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
+import TransitionGroup from 'react-addons-transition-group'
 import {Socket, Presence} from "phoenix"
 import {Starter} from "./starter"
 
@@ -11,6 +13,7 @@ let userSocket
 let userChannel
 let messageSocket
 let messageChannel
+let presences
 
 var AnswerBootstrap = React.createClass({
   getInitialState: function() {
@@ -131,8 +134,9 @@ var AnswerBootstrap = React.createClass({
       })
       // listener per utente che abbandona
       messageChannel.on("presence_diff", diff => {
-       presences = Presence.syncDiff(presences, diff, onJoin, onLeave)
-       console.log(presences);
+        // in old presence devo avere la lista precedente 
+//       presences = Presence.syncDiff(oldpresences, diff)
+       console.log(diff);
 //       this.setState({users: Presence.list(room.presences, listBy)})
      })
 
@@ -256,7 +260,14 @@ var UsersList = React.createClass({
     });
     return (
       <div className="usersList ui vertical secondary menu">
-        {userNodes}
+        <ReactCSSTransitionGroup 
+          transitionName="userlist" 
+          transitionEnterTimeout={500} 
+          transitionLeaveTimeout={300}
+          transitionAppear={true} 
+          transitionAppearTimeout={500}>
+          {userNodes}
+        </ReactCSSTransitionGroup>
       </div>
     );
   }
@@ -265,7 +276,7 @@ var UsersList = React.createClass({
 var MessageBox = React.createClass({
   isActive: function() {
     return "messageList ui tab segment " + ((this.props.active === "active") ? "active" : "");
-  },
+  },  
   render: function() {
     var messageNodes = this.props.messages.map(function(message) {
       return (
@@ -280,7 +291,9 @@ var MessageBox = React.createClass({
     });
     return (
       <div className={this.isActive()} data-tab={this.props.chat.chat}>
-        {messageNodes}
+        <TransitionGroup>
+          {messageNodes}
+        </TransitionGroup>  
       </div>
     );
   }
@@ -349,9 +362,20 @@ var Message = React.createClass({
     bottomClass += ' bottom attached segment';
     return bottomClass;
   },
+  componentWillEnter: function(callback) {
+      const el = $(this._message);
+//      $(el).transition('slide up').then(callback);
+      $(el).css('opacity',0).animate({opacity: 1}, 300, 'linear', callback);
+  },
+  componentWillAppear: function(callback) {
+      console.log('appear');
+      const el = $(this._message);
+      console.log(el);
+      $(el).transition('slide up').then(callback);
+  },
   render: function() {
     return (
-      <div className="comment column">
+      <div className="comment column" ref={(ref) => this._message = ref}>
         <h4 className={this.topOwnerClass()}>{this.props.author}</h4>
         <div className={this.bottomOwnerClass()}>{this.props.text}</div>
       </div>
