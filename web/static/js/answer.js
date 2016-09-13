@@ -278,7 +278,7 @@ var MessageBox = React.createClass({
     return "messageList ui tab segment " + ((this.props.active === "active") ? "active" : "");
   },  
   render: function() {
-    var messageNodes = this.props.messages.map(function(message) {
+    var messageNodes = this.props.messages.map((message) => {
       return (
         <Message 
           key={message.id} 
@@ -286,6 +286,7 @@ var MessageBox = React.createClass({
           chat={message.chat} 
           text={message.text}
           mine={message.mine}
+          total={this.props.messages.length}
           />
       );
     });
@@ -364,14 +365,17 @@ var Message = React.createClass({
   },
   componentWillEnter: function(callback) {
       const el = $(this._message);
-//      $(el).transition('slide up').then(callback);
-      $(el).css('opacity',0).animate({opacity: 1}, 300, 'linear', callback);
+      var totalHeight = this.props.total * $(el).outerHeight(true);
+      $(el).parent().parent().scrollTop(totalHeight);
+      $(el).css('opacity',0)
+      .animate({opacity: 1}, 300, 'linear', callback);
   },
   componentWillAppear: function(callback) {
-      console.log('appear');
       const el = $(this._message);
-      console.log(el);
-      $(el).transition('slide up').then(callback);
+      var totalHeight = this.props.total * $(el).outerHeight(true);      
+      $(el).parent().parent().scrollTop(totalHeight);
+      $(el).css('opacity',0)
+      .animate({opacity: 1}, 300, 'linear', callback);
   },
   render: function() {
     return (

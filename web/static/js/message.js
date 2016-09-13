@@ -1,5 +1,6 @@
 import React from "react"
 import ReactDOM from "react-dom"
+import TransitionGroup from 'react-addons-transition-group'
 import {Socket} from "phoenix"
 import {Starter} from "./starter"
 
@@ -63,9 +64,23 @@ var Comment = React.createClass({
     bottomClass += ' bottom attached segment';
     return bottomClass;
   },
+  componentWillEnter: function(callback) {
+      const el = $(this._message);
+      var totalHeight = this.props.total * $(el).outerHeight(true);
+      $(el).parent().parent().scrollTop(totalHeight);
+      $(el).css('opacity',0)
+      .animate({opacity: 1}, 300, 'linear', callback);
+  },
+  componentWillAppear: function(callback) {
+      const el = $(this._message);
+      var totalHeight = this.props.total * $(el).outerHeight(true);      
+      $(el).parent().parent().scrollTop(totalHeight);
+      $(el).css('opacity',0)
+      .animate({opacity: 1}, 300, 'linear', callback);
+  },
   render: function() {
     return (
-      <div className="comment column">
+      <div className="comment column" ref={(ref) => this._message = ref}>
         <h4 className={this.topOwnerClass()}>{this.props.author}</h4>
         <div className={this.bottomOwnerClass()} dangerouslySetInnerHTML={this.rawMarkup()} />
       </div>
@@ -170,16 +185,22 @@ var CommentBox = React.createClass({
 
 var CommentList = React.createClass({
   render: function() {
-    var commentNodes = this.props.data.map(function(comment) {
+    var commentNodes = this.props.data.map((comment) => {
       return (        
-        <Comment author={comment.author} key={comment.id} mine={comment.mine}>
+        <Comment 
+            author={comment.author} 
+            key={comment.id} 
+            mine={comment.mine}
+            total={this.props.data.length}>
           {comment.text}
         </Comment>
       );
     });
     return (
       <div className="messageList ui list">
-        {commentNodes}
+        <TransitionGroup>
+          {commentNodes}
+        </TransitionGroup>
       </div>
     );
   }
