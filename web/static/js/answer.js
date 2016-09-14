@@ -133,11 +133,39 @@ var AnswerBootstrap = React.createClass({
         }
       })
       // listener per utente che abbandona
-      messageChannel.on("presence_diff", diff => {
+      messageChannel.on("presence_diff", (diff) => {
         // in old presence devo avere la lista precedente 
 //       presences = Presence.syncDiff(oldpresences, diff)
-       console.log(diff);
-//       this.setState({users: Presence.list(room.presences, listBy)})
+        console.log(diff);
+        var update = false;
+        var oldchats = this.state.chats;
+        var users = this.state.users;
+        if(!_.isEmpty(oldchats) && !_.isEmpty(diff.leaves)) {
+          for(var key in oldchats){
+            if(!_.isEmpty(oldchats[key])) {
+              var item = oldchats[key];
+              if(_.has(diff.leaves, item.user ) && item.status === "active" ) {
+                item.status = "disabled";
+                oldchats[key] = item;
+                update = true;
+              }
+            }    
+          }
+          for(var key in users){
+            if(!_.isEmpty(users[key])) {
+              var user = users[key];
+              if(_.has(diff.leaves, user.id ) && user.status !== "disabled" ) {
+                user.status = "disabled";
+                users[key] = user;
+                update = true;
+              }
+            }    
+          }              
+        }
+
+        if(update) {
+          this.setState({chats: oldchats, users: users});
+        }
      })
 
       oldchats[chat_id].channel = messageChannel;
@@ -255,7 +283,15 @@ var UsersList = React.createClass({
     var handleClick = this.handleClick;
     var userNodes = this.props.users.map((user) => {
       return (
-        <UserDetail key={user.id} chat={user.chat} name={user.name} handleClick={handleClick} user={user} selected={this.props.selected}/>
+        <UserDetail 
+          key={user.id} 
+          chat={user.chat} 
+          name={user.name} 
+          handleClick={handleClick} 
+          user={user} 
+          selected={this.props.selected}
+          status={user.status}
+          />
       );
     });
     return (
@@ -302,7 +338,9 @@ var MessageBox = React.createClass({
 
 var UserDetail = React.createClass({
   handleClick: function(){
-    this.props.handleClick(this.props.user);
+    if(this.props.status !== "disabled") {
+      this.props.handleClick(this.props.user);
+    }
   },
   getStyleClass: function() {
     var className = 'fluid ui vertical animated ';
@@ -316,6 +354,9 @@ var UserDetail = React.createClass({
       className += ' red basic button';
     } else {
       className += ' olive basic button';
+    }
+    if(this.props.status === "disabled") {
+      className += ' disabled'; 
     }
     return className;
   },
