@@ -1,6 +1,9 @@
 defmodule Ruru.OperatorSocket do
   use Phoenix.Socket
 
+  alias Ruru.Operator
+  alias Ruru.Repo  
+
   ## Channels
   channel "answer:*", Ruru.AnswerChannel
 
@@ -19,8 +22,15 @@ defmodule Ruru.OperatorSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
-    {:ok, socket}    
+  def connect(%{"token" => token}, socket) do
+    # Max age of 2 weeks (1209600 seconds)
+    case Phoenix.Token.verify(socket, "operator", token, max_age: 1209600) do
+      {:ok, operator_id} ->
+        socket = assign(socket, :operator, Repo.get!(Operator, operator_id))
+        {:ok, socket}
+      {:error, _} ->
+        :error
+    end
   end
 
 #  def connect(%{"token" => token}, socket) do
@@ -44,6 +54,6 @@ defmodule Ruru.OperatorSocket do
   #     Ruru.Endpoint.broadcast("users_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
-#  def id(socket), do: "users_socket:#{socket.assigns.user.id}"
+#  def id(_socket), do: nil
+  def id(socket), do: "operator_socket:#{socket.assigns.operator.id}"
 end

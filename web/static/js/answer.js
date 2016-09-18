@@ -59,6 +59,7 @@ var AnswerBootstrap = React.createClass({
   },
   preloadUsersFromServer: function() {    
     var token = window.operatorToken;
+    var myId = window.operatorID;
     $.ajax("/api/operator/users/preload", {
       method: "GET",
       data: {token: token, target: "users"}, 
@@ -73,7 +74,10 @@ var AnswerBootstrap = React.createClass({
                   operator_id = item.operator.id;
                 }
                 var user = {id: item.user.id, name: item.user.name, chat: item.id, operator: operator_id}
-                newUsers = newUsers.concat([user])            
+                newUsers = newUsers.concat([user])
+                if (operator_id === myId) {
+                  this.activateUserChannel(user);
+                }     
               }
             }
           })
@@ -96,7 +100,7 @@ var AnswerBootstrap = React.createClass({
     });
   },
   componentDidMount: function() {
-    userSocket = new Socket("/answersocket")
+    userSocket = new Socket("/answersocket", {params: {role: "operator", token: window.operatorToken}})
     userSocket.connect()
     // Now that you are connected, you can join channels with a topic:
     userChannel = userSocket.channel("answer:users", {})
@@ -140,6 +144,7 @@ var AnswerBootstrap = React.createClass({
         var update = false;
         var oldchats = this.state.chats;
         var users = this.state.users;
+        // LEAVES
         if(!_.isEmpty(oldchats) && !_.isEmpty(diff.leaves)) {
           for(var key in oldchats){
             if(!_.isEmpty(oldchats[key])) {
@@ -160,9 +165,33 @@ var AnswerBootstrap = React.createClass({
                 update = true;
               }
             }    
-          }              
+          }          
         }
-
+        // END LEAVES
+        // JOINS
+        if(!_.isEmpty(oldchats) && !_.isEmpty(diff.joins)) {
+          for(var key in oldchats){
+            if(!_.isEmpty(oldchats[key])) {
+              var item = oldchats[key];
+              if(_.has(diff.joins, item.user ) && item.status !== "active" ) {
+                item.status = "active";
+                oldchats[key] = item;
+                update = true;
+              }
+            }    
+          }
+          for(var key in users){
+            if(!_.isEmpty(users[key])) {
+              var user = users[key];
+              if(_.has(diff.joins, user.id ) && user.status === "disabled" ) {
+                user.status = "active";
+                users[key] = user;
+                update = true;
+              }
+            }    
+          }          
+        }
+        // END JOINS
         if(update) {
           this.setState({chats: oldchats, users: users});
         }
@@ -173,10 +202,14 @@ var AnswerBootstrap = React.createClass({
     }       
   },
   handleClickOnUser: function(user) {
-    this.setState({selected: user}, () => {    
-      var found = false;
+    this.setState({selected: user}, () => {
+      this.activateUserChannel(user);
+      this.forceUpdate();  
+    });
+  },
+  activateUserChannel: function(user) {
+    var found = false;
       var oldchats = this.state.chats;
-      var chats = oldchats;
       for(var key in oldchats){
         if(!_.isEmpty(oldchats[key])) {
           var item = oldchats[key];
@@ -190,22 +223,19 @@ var AnswerBootstrap = React.createClass({
       }
       if(!found) {
         var chat = {chat: user.chat, user: user.id, status: "active", messages: [], channel: null, preloaded: false};
-        chats[user.chat] = chat;
-        this.setState({chats: chats}, () => {
+        oldchats[user.chat] = chat;
+        this.setState({chats: oldchats}, () => {
           // subscription to channel          
           this.loadMessageChannel(user.chat, user.name)          
-          this.preloadCommentsFromServer();
+          this.preloadCommentsFromServer(user.chat);
         });        
       } else {
-        this.setState({chats: chats}, () => {
-          this.preloadCommentsFromServer();
+        this.setState({chats: oldchats}, () => {
+          this.preloadCommentsFromServer(user.chat);
         });
-      }
-      this.forceUpdate();
-    });
+      }      
   },
-  preloadCommentsFromServer: function() {    
-    var chat = this.state.selected.chat;
+  preloadCommentsFromServer: function(chat) {
     var token = window.operatorToken;
     var oldchats = this.state.chats;
     if (!oldchats[chat].preloaded) {
