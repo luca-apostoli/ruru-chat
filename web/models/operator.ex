@@ -1,4 +1,9 @@
 defmodule Ruru.Operator do
+
+  @moduledoc """
+    Ecto model for Operators
+  """
+
   use Ruru.Web, :model
 
   @derive {Poison.Encoder, only: [:id, :name]}

@@ -1,5 +1,9 @@
 defmodule Ruru.Session do
-	
+  
+  @moduledoc """
+    Wrapper for session handling
+  """
+
 	alias Ruru.Operator
 	alias Ruru.Repo
 

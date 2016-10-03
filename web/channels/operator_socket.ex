@@ -24,7 +24,7 @@ defmodule Ruru.OperatorSocket do
   # performing token verification on connect.
   def connect(%{"token" => token}, socket) do
     # Max age of 2 weeks (1209600 seconds)
-    case Phoenix.Token.verify(socket, "operator", token, max_age: 1209600) do
+    case Phoenix.Token.verify(socket, "operator", token, max_age: 1_209_600) do
       {:ok, operator_id} ->
         socket = assign(socket, :operator, Repo.get!(Operator, operator_id))
         {:ok, socket}

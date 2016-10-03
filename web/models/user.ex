@@ -1,4 +1,9 @@
 defmodule Ruru.User do
+
+  @moduledoc """
+    Ecto model for the User
+  """
+
   use Ruru.Web, :model
   
   import Ecto.Query

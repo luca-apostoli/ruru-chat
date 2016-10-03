@@ -1,4 +1,9 @@
 defmodule Ruru.Plugs.Authentication do
+
+  @moduledoc """
+    module to check authentication
+  """
+
   import Plug.Conn  
 
   alias Ruru.Session

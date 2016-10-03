@@ -1,4 +1,9 @@
 defmodule Ruru do
+
+  @moduledoc """
+    Application base module
+  """
+
   use Application
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html

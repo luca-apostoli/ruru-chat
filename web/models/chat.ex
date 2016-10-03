@@ -1,4 +1,9 @@
 defmodule Ruru.Chat do
+
+  @moduledoc """
+    Ecto model for Chats
+  """
+
   use Ruru.Web, :model
 
   import Ecto.Query

@@ -38,6 +38,7 @@ defmodule Ruru.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:comeonin, "~> 2.5"},
+     {:credo, "~> 0.4", only: [:dev, :test]},
      {:cowboy, "~> 1.0"}]
   end
 

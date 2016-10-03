@@ -1,4 +1,9 @@
 defmodule Ruru.Message do
+
+  @moduledoc """
+    Ecto model for Messages
+  """
+
   use Ruru.Web, :model
 
   @derive {Poison.Encoder, only: [:id, :text, :user, :operator, :inserted_at]}

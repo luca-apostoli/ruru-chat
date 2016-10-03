@@ -1,4 +1,9 @@
 defmodule Ruru.AnswerChannel do
+
+  @moduledoc """
+    Channel handler for private websockets
+  """
+
   use Phoenix.Channel
 
   alias Ruru.Repo

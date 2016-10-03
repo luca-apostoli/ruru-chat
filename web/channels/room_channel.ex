@@ -1,8 +1,11 @@
 defmodule Ruru.RoomChannel do
+
+  @moduledoc """
+    Channel handler for public websockets
+  """
+
   use Phoenix.Channel
-
-  intercept ["new_msg"]
-
+  
   alias Ruru.User
   alias Ruru.Message
   alias Ruru.Repo
@@ -10,6 +13,8 @@ defmodule Ruru.RoomChannel do
   alias Ruru.Chat
   alias Ruru.Presence
   alias Ruru.Operator
+
+  intercept ["new_msg"]
 
   def join("room:lobby", _message, socket) do
     {:ok, socket}
@@ -26,8 +31,8 @@ defmodule Ruru.RoomChannel do
             true ->
               {:ok, socket}
             false ->              
-              chatOperator = Repo.get!(Operator, operator)
-              chat = Ecto.Changeset.change chat, operator_id: chatOperator.id
+              chat_operator = Repo.get!(Operator, operator)
+              chat = Ecto.Changeset.change chat, operator_id: chat_operator.id
               case Repo.update chat do
                 {:ok, struct} -> 
                   Ruru.Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chatOperator.id}
