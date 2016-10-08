@@ -4,13 +4,15 @@ defmodule Ruru.UserSocket do
   alias Ruru.User
   alias Ruru.Operator
   alias Ruru.Repo  
+  alias Phoenix.Transports
+  alias Phoenix.Token
 
   ## Channels
   channel "room:*", Ruru.RoomChannel
 
   ## Transports
-  transport :websocket, Phoenix.Transports.WebSocket
-  transport :longpoll, Phoenix.Transports.LongPoll
+  transport :websocket, Transports.WebSocket
+  transport :longpoll, Transports.LongPoll
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -25,7 +27,7 @@ defmodule Ruru.UserSocket do
   # performing token verification on connect.
   def connect(%{"role" => role, "token" => token}, socket) do
     # Max age of 2 weeks (1209600 seconds)
-    case Phoenix.Token.verify(socket, "operator", token, max_age: 1_209_600) do
+    case Token.verify(socket, "operator", token, max_age: 1_209_600) do
       {:ok, operator_id} ->
         socket = assign(socket, :operator, Repo.get!(Operator, operator_id))
         {:ok, socket}
@@ -36,7 +38,7 @@ defmodule Ruru.UserSocket do
 
   def connect(%{"token" => token}, socket) do
     # Max age of 2 weeks (1209600 seconds)
-    case Phoenix.Token.verify(socket, "user", token, max_age: 1_209_600) do
+    case Token.verify(socket, "user", token, max_age: 1_209_600) do
       {:ok, user_id} ->
         socket = assign(socket, :user, Repo.get!(User, user_id))
         {:ok, socket}

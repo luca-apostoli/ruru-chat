@@ -13,6 +13,9 @@ defmodule Ruru.RoomChannel do
   alias Ruru.Chat
   alias Ruru.Presence
   alias Ruru.Operator
+  alias Ruru.Endpoint
+  alias Ecto.Changeset
+
 
   intercept ["new_msg"]
 
@@ -31,18 +34,23 @@ defmodule Ruru.RoomChannel do
             true ->
               {:ok, socket}
             false ->              
-              chat_operator = Repo.get!(Operator, operator)
-              chat = Ecto.Changeset.change chat, operator_id: chat_operator.id
-              case Repo.update chat do
-                {:ok, struct} -> 
-                  Ruru.Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chatOperator.id}
-                  {:ok, socket} # Updated with success
-                {:error, changeset} -> 
-                  {:error, socket} # Something went wrong
-              end            
+              assign_chat_operator(operator) 
           end
     end        
   end
+
+  defp assign_chat_operator(operator) do
+    chat_operator = Repo.get!(Operator, operator)
+    chat = Changeset.change chat, operator_id: chat_operator.id
+    case Repo.update chat do
+      {:ok, struct} -> 
+        Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chatOperator.id}
+        {:ok, socket} # Updated with success
+      {:error, changeset} -> 
+        {:error, socket} # Something went wrong
+    end 
+  end
+
 
   def join("room:" <> chat_id, %{"guest" => guest, "role" => role}, socket) do    
     ## controllare se chat id e guest id corrisopndono, role è user o operator
@@ -52,7 +60,7 @@ defmodule Ruru.RoomChannel do
         user -> 
           socket = assign(socket, :chat_id, chat_id)
           chat = Repo.get!(Chat, chat_id)
-          chat = Ecto.Changeset.change chat, status: true
+          chat = Changeset.change chat, status: true
           Repo.update!(chat)
           send(self, :after_join)
           {:ok, socket}
@@ -90,9 +98,9 @@ defmodule Ruru.RoomChannel do
   def handle_in("usr_leave", %{"role" => role}, socket) do
     chat_id = socket.assigns[:chat_id]
     chat = Repo.get!(Chat, chat_id)
-    chat = Ecto.Changeset.change chat, status: false
+    chat = Changeset.change chat, status: false
     Repo.update!(chat)    
-    Ruru.Endpoint.broadcast_from! self(), "answer:users", "usr_left", %{chat_id: chat_id}
+    Endpoint.broadcast_from! self(), "answer:users", "usr_left", %{chat_id: chat_id}
     {:stop, :shutdown, socket}
   end
 

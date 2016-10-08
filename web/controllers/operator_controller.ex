@@ -3,6 +3,7 @@ defmodule Ruru.OperatorController do
 
   alias Ruru.Operator
   alias Ecto.Changeset
+  alias Comeonin.Bcrypt
 
   def index(conn, _params) do
     operators = Repo.all(Operator)
@@ -16,7 +17,7 @@ defmodule Ruru.OperatorController do
 
   def create(conn, %{"operator" => operator_params}) do
     changeset = Operator.changeset(%Operator{}, operator_params)
-    changeset = Changeset.put_change(changeset, :salt, Comeonin.Bcrypt.gen_salt(12, true))
+    changeset = Changeset.put_change(changeset, :salt, Bcrypt.gen_salt(12, true))
     changeset = Changeset.put_change(changeset, :password, hashed_password(Changeset.get_field(changeset, :cleanpwd), Changeset.get_field(changeset, :salt)))
 
     case Repo.insert(changeset) do
@@ -30,7 +31,7 @@ defmodule Ruru.OperatorController do
   end
 
   defp hashed_password(password, salt) do
-    Comeonin.Bcrypt.hashpass(password, salt)
+    Bcrypt.hashpass(password, salt)
   end
 
   def show(conn, %{"id" => id}) do
