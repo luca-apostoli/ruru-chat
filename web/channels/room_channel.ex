@@ -34,23 +34,10 @@ defmodule Ruru.RoomChannel do
             true ->
               {:ok, socket}
             false ->              
-              assign_chat_operator(operator) 
+              assign_chat_operator(operator, chat, chat_id, socket) 
           end
     end        
   end
-
-  defp assign_chat_operator(operator) do
-    chat_operator = Repo.get!(Operator, operator)
-    chat = Changeset.change chat, operator_id: chat_operator.id
-    case Repo.update chat do
-      {:ok, struct} -> 
-        Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chatOperator.id}
-        {:ok, socket} # Updated with success
-      {:error, changeset} -> 
-        {:error, socket} # Something went wrong
-    end 
-  end
-
 
   def join("room:" <> chat_id, %{"guest" => guest, "role" => role}, socket) do    
     ## controllare se chat id e guest id corrisopndono, role è user o operator
@@ -65,6 +52,18 @@ defmodule Ruru.RoomChannel do
           send(self, :after_join)
           {:ok, socket}
     end    
+  end
+
+  defp assign_chat_operator(operator, chat, chat_id, socket) do
+    chat_operator = Repo.get!(Operator, operator)
+    chat = Changeset.change chat, operator_id: chat_operator.id
+    case Repo.update chat do
+      {:ok, struct} -> 
+        Endpoint.broadcast_from! self(), "answer:users", "opt_owned", %{chat: chat_id, operator: chat_operator.id}
+        {:ok, socket} # Updated with success
+      {:error, changeset} -> 
+        {:error, socket} # Something went wrong
+    end 
   end
 
   #aggiungere id utente e ruolo tra i parametri ricevuti

@@ -5,6 +5,10 @@ import TransitionGroup from 'react-addons-transition-group'
 import {Socket, Presence} from "phoenix"
 import {Starter} from "./starter"
 
+import {MessageForm} from "./operator/message_form"
+import {MessageBox} from "./operator/message_box"
+import {UsersList} from "./operator/users_list"
+
 let Remarkable = require('remarkable')
 let $ = require("jquery")
 let _ = require("lodash")
@@ -54,7 +58,6 @@ var AnswerBootstrap = React.createClass({
         this.setState({users: this.sortUsers(users)});
       }      
     })
-
 
   },
   preloadUsersFromServer: function() {    
@@ -302,186 +305,6 @@ var AnswerBootstrap = React.createClass({
         </div>
       </div>
     );
-  }
-});
-
-var UsersList = React.createClass({
-  handleClick: function(user) {
-    this.props.handleClick(user);
-  },
-  render: function() {
-    var handleClick = this.handleClick;
-    var userNodes = this.props.users.map((user) => {
-      return (
-        <UserDetail 
-          key={user.id} 
-          chat={user.chat} 
-          name={user.name} 
-          handleClick={handleClick} 
-          user={user} 
-          selected={this.props.selected}
-          status={user.status}
-          />
-      );
-    });
-    return (
-      <div className="usersList ui vertical secondary menu">
-        <ReactCSSTransitionGroup 
-          transitionName="userlist" 
-          transitionEnterTimeout={500} 
-          transitionLeaveTimeout={300}
-          transitionAppear={true} 
-          transitionAppearTimeout={500}>
-          {userNodes}
-        </ReactCSSTransitionGroup>
-      </div>
-    );
-  }
-});
-
-var MessageBox = React.createClass({
-  isActive: function() {
-    return "messageList ui tab segment " + ((this.props.active === "active") ? "active" : "");
-  },  
-  render: function() {
-    var messageNodes = this.props.messages.map((message) => {
-      return (
-        <Message 
-          key={message.id} 
-          author={message.author} 
-          chat={message.chat} 
-          text={message.text}
-          mine={message.mine}
-          total={this.props.messages.length}
-          />
-      );
-    });
-    return (
-      <div className={this.isActive()} data-tab={this.props.chat.chat}>
-        <TransitionGroup>
-          {messageNodes}
-        </TransitionGroup>  
-      </div>
-    );
-  }
-});
-
-var UserDetail = React.createClass({
-  handleClick: function(){
-    if(this.props.status !== "disabled") {
-      this.props.handleClick(this.props.user);
-    }
-  },
-  getStyleClass: function() {
-    var className = 'fluid ui vertical animated ';
-    if(this.props.user.operator > 0 && this.props.user.operator === window.operatorID ) {
-      className += ' teal '
-      if (this.props.user.id !== this.props.selected.id) {
-        className += ' basic ';
-      }
-      className += ' button';
-    } else if(this.props.user.operator > 0 && this.props.user.operator !== window.operatorID ) {
-      className += ' red basic button';
-    } else {
-      className += ' olive basic button';
-    }
-    if(this.props.status === "disabled") {
-      className += ' disabled'; 
-    }
-    return className;
-  },
-  getHiddenContent: function() {
-    var hiddenContent = '';
-    if(this.props.user.operator > 0 && this.props.user.operator === window.operatorID ) {
-      if (this.props.user.id === this.props.selected.id) {
-        hiddenContent += ' <3 ';
-      } else {
-        hiddenContent += 'Pending ...';
-      }
-    } else if(this.props.user.operator > 0 && this.props.user.operator !== window.operatorID ) {
-      hiddenContent += 'Served by '+this.props.user.operator;
-    } else {
-      hiddenContent += 'New user, yay!!';
-    }
-    return hiddenContent;
-  },
-  render: function() {
-    return (
-      <div className="userDetails item" data-tab={this.props.chat} onClick={this.handleClick}>
-        <div className={this.getStyleClass()}>
-          <div className="hidden content">{this.getHiddenContent()}</div>
-          <div className="visible content">{this.props.name}</div>          
-        </div>
-      </div>
-    );
-  }
-});
-
-var Message = React.createClass({
-  topOwnerClass: function() {
-    var topClass = ' ui '; 
-    if (!this.props.mine) {
-      topClass += ' right aligned blue ';
-    }
-    topClass += ' top attached block header';
-    return topClass;
-  },
-  bottomOwnerClass: function() {
-    var bottomClass = 'ui ';
-    if (!this.props.mine) {
-      bottomClass += ' right aligned ';
-    }
-    bottomClass += ' bottom attached segment';
-    return bottomClass;
-  },
-  componentWillEnter: function(callback) {
-      const el = $(this._message);
-      var totalHeight = this.props.total * $(el).outerHeight(true);
-      $(el).parent().parent().scrollTop(totalHeight);
-      $(el).css('opacity',0)
-      .animate({opacity: 1}, 300, 'linear', callback);
-  },
-  componentWillAppear: function(callback) {
-      const el = $(this._message);
-      var totalHeight = this.props.total * $(el).outerHeight(true);      
-      $(el).parent().parent().scrollTop(totalHeight);
-      $(el).css('opacity',0)
-      .animate({opacity: 1}, 300, 'linear', callback);
-  },
-  render: function() {
-    return (
-      <div className="comment column" ref={(ref) => this._message = ref}>
-        <h4 className={this.topOwnerClass()}>{this.props.author}</h4>
-        <div className={this.bottomOwnerClass()}>{this.props.text}</div>
-      </div>
-    );
-  }
-});
-
-var MessageForm = React.createClass({
-    getInitialState: function() {
-      return {text: ""};
-    },
-    handleTextChange: function(e) {
-      this.setState({text: e.target.value})
-    },
-    handleSubmit: function (e) {
-      e.preventDefault();
-      this.props.onMessageSubmit({author: window.operatorEmail, text: this.state.text, guest: window.operatorID});
-      this.setState({text: ''});
-    },
-    render: function() {
-      return (
-        <form className="messageForm ui form" onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            placeholder="Say your answer..."
-            value={this.state.text}
-            onChange={this.handleTextChange}
-          />
-          <input type="submit" value="Send" className="ui button" />
-        </form>
-      );
   }
 });
 

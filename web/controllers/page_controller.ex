@@ -34,7 +34,7 @@ defmodule Ruru.PageController do
 		case Token.verify(conn, "operator", token, max_age: 1_209_600) do
       		{:ok, operator_id} -> 
       			operator = Repo.get!(Operator, operator_id)
-            load_chat_by_operator(operator, chat_id)      			
+            load_chat_by_operator(operator, chat_id, conn)      			
       		{:error, _} ->
         		:error
     	end
@@ -60,23 +60,23 @@ defmodule Ruru.PageController do
 		case Token.verify(conn, "user", token, max_age: 1_209_600) do
       		{:ok, user_id} -> 
       			user = Repo.get!(User, user_id)
-            load_chat_by_user(user, chat_id)      			
+            load_chat_by_user(user, chat_id, conn)      			
       		{:error, _} ->
         		:error
     	end
 	end
 
-  defp load_chat_by_operator(operator, chat_id) do
+  defp load_chat_by_operator(operator, chat_id, conn) do
     case Chat |> Chat.by_operator(operator) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
       nil -> 
         json conn, %{}
     chat ->
       ## carico i messaggi 
-      load_messages_by_chat(chat)
+      load_messages_by_chat(chat, conn)
     end
   end
 
-  defp load_chat_by_user(user, chat_id) do
+  defp load_chat_by_user(user, chat_id, conn) do
     case Chat |> Chat.by_user(user) |> Chat.open |> Chat.by_id(chat_id) |> first |> Repo.one do
       :error -> 
         json conn, %{}
@@ -84,11 +84,11 @@ defmodule Ruru.PageController do
         json conn, %{}
     chat ->
       ## carico i messaggi 
-      load_messages_by_chat(chat)
+      load_messages_by_chat(chat, conn)
     end
   end
 
-  defp load_messages_by_chat(chat) do
+  defp load_messages_by_chat(chat, conn) do
     case Message |> Message.by_chat(chat) |> Message.with_users |> Message.with_operators |> Message.sorted |> Repo.all do
         nil -> 
           json conn, %{}
