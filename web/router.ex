@@ -22,9 +22,9 @@ defmodule Ruru.Router do
     plug :accepts, ["json"]
   end
   
-  resources "/users", UserController
-  resources "/messages", MessageController
-  resources "/chats", ChatController
+#  resources "/users", UserController
+#  resources "/messages", MessageController
+#  resources "/chats", ChatController
 
   scope "/admin", Ruru do
     pipe_through :browser_auth # Use the default browser stack + auth

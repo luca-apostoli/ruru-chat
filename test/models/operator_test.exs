@@ -3,7 +3,7 @@ defmodule Ruru.OperatorTest do
 
   alias Ruru.Operator
 
-  @valid_attrs %{email: "some content", name: "some content", password: "some content"}
+  @valid_attrs %{email: "some content", name: "some content", password: "some content", salt: "aaaaaa"}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

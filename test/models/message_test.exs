@@ -3,7 +3,7 @@ defmodule Ruru.MessageTest do
 
   alias Ruru.Message
 
-  @valid_attrs %{sender: "some content", sender_id: 42, text: "some content"}
+  @valid_attrs %{user_id: 42, operator_id: 42, text: "some content", chat_id: 10}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do
