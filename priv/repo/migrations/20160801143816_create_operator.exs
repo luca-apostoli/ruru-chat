@@ -6,6 +6,7 @@ defmodule Ruru.Repo.Migrations.CreateOperator do
       add :name, :string
       add :email, :string
       add :password, :string
+      add :salt, :string   
 
       timestamps()
     end

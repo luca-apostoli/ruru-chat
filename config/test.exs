@@ -12,8 +12,8 @@ config :logger, level: :warn
 # Configure your database
 config :ruru, Ruru.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "phoenix",
+  password: "phoenix",
   database: "ruru_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
