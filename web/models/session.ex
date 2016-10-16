@@ -8,7 +8,13 @@ defmodule Ruru.Session do
 
 	def current_operator(conn) do
     id = Conn.get_session(conn, :logged_operator)
-    if id, do: Repo.get!(Operator, id)
+    if id do
+       case Repo.get(Operator, id) do
+        false -> false
+        nil -> false
+        operator -> operator 
+       end
+    end
   end
 
 	def is_logged?(conn), do: !!current_operator(conn)

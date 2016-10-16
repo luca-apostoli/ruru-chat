@@ -3,13 +3,13 @@ defmodule Ruru.Repo.Migrations.CreateChat do
 
   def change do
     create table(:chats) do
-      add :user, references(:users, on_delete: :nothing)
-      add :operator, references(:operators, on_delete: :nothing)
+      add :user_id, references(:users, on_delete: :nothing)
+      add :operator_id, references(:operators, on_delete: :nothing)
       add :status, :boolean, default: false
       timestamps()
     end
-    create index(:chats, [:user])
-    create index(:chats, [:operator])
+    create index(:chats, [:user_id])
+    create index(:chats, [:operator_id])
 
   end
 end

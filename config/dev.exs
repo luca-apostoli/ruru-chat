@@ -38,6 +38,6 @@ config :ruru, Ruru.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "phoenix",
   password: "phoenix",
-  database: "ruru_dev",
-  hostname: "localhost",
+  database: "phoenix",
+  hostname: "postgres",
   pool_size: 10

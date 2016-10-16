@@ -16,7 +16,7 @@ defmodule Ruru.LoginController do
       nil ->
         conn
           |> put_flash(:error, "Operator NOT logged.")
-          |> redirect(to: operator_path(conn, :login))
+          |> redirect(to: login_path(conn, :login))
       operator ->
         case Bcrypt.checkpw(operator_params["cleanpwd"], operator.password) do
           true ->
