@@ -39,6 +39,7 @@ defmodule Ruru.Mixfile do
      {:gettext, "~> 0.11"},
      {:comeonin, "~> 2.5"},
      {:credo, "~> 0.4", only: [:dev, :test]},
+     {:rethinkdb, "~> 0.4"},
      {:cowboy, "~> 1.0"}]
   end
 
