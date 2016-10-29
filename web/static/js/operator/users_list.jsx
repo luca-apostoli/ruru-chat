@@ -1,7 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import {UserDetail} from "./user_detail"
+import {UserDetail} from "operator_user_detail"
 
 export class UsersList extends React.Component{
 

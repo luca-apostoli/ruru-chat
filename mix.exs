@@ -52,6 +52,7 @@ defmodule Ruru.Mixfile do
   defp aliases do
     ["ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "phoenix.digest": "webpack_integration.digest",
      "test": ["ecto.create --quiet", "ecto.migrate", "test"]]
   end
 end

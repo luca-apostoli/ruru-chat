@@ -2,8 +2,8 @@ import React from "react"
 import ReactDOM from "react-dom"
 import TransitionGroup from 'react-addons-transition-group'
 
-import {CommentList} from './comment_list'
-import {CommentForm} from './comment_form'
+import {CommentList} from 'client_comment_list'
+import {CommentForm} from 'client_comment_form'
 
 import {Socket} from "phoenix"
 

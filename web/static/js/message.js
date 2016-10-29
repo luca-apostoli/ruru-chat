@@ -4,8 +4,8 @@ import TransitionGroup from 'react-addons-transition-group'
 
 import {Starter} from "./starter"
 
-import {CommentBox} from './client/comment_box'
-import {SimpleLogin} from './client/simple_login'
+import {CommentBox} from 'client_comment_box'
+import {SimpleLogin} from 'client_simple_login'
 
 
 let $ = require("jquery")

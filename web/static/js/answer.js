@@ -5,9 +5,9 @@ import TransitionGroup from 'react-addons-transition-group'
 import {Socket, Presence} from "phoenix"
 import {Starter} from "./starter"
 
-import {MessageForm} from "./operator/message_form"
-import {MessageBox} from "./operator/message_box"
-import {UsersList} from "./operator/users_list"
+import {MessageForm} from "operator_message_form"
+import {MessageBox} from "operator_message_box"
+import {UsersList} from "operator_users_list"
 
 let Remarkable = require('remarkable')
 let $ = require("jquery")

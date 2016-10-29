@@ -1,7 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import TransitionGroup from 'react-addons-transition-group'
-import {Message} from "./message"
+import {Message} from "operator_message"
 
 export class MessageBox extends React.Component {
 

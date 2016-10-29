@@ -1,0 +1,49 @@
+/* This file is for your main application css. */
+
+@mixin transition($args...) {
+  -webkit-transition: $args;
+  -moz-transition: $args;
+  -ms-transition: $args;
+  -o-transition: $args;
+  transition: $args;
+}
+
+@mixin opacity($opacity) {
+  opacity: $opacity;
+  $opacity-ie: $opacity * 100;
+  filter: alpha(opacity=$opacity-ie); //IE8
+}
+
+.userlist-enter {
+  @include opacity( 0.01);
+}
+
+.userlist-enter.userlist-enter-active {
+  @include opacity(1);
+   @include transition(opacity 500ms ease-in);
+}
+
+.userlist-leave {
+  @include opacity(1);
+}
+
+.userlist-leave.userlist-leave-active {
+  @include opacity(0.01);
+   @include transition(opacity 300ms ease-in);
+}
+
+.userlist-appear {
+  @include opacity(0.01);
+}
+
+.userlist-appear.userlist-appear-active {
+  @include opacity(1);
+   @include transition(opacity .5s ease-in);
+}
+
+.messageList {
+	max-height: 400px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	vertical-align: baseline;
+}

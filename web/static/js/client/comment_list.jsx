@@ -2,7 +2,7 @@ import React from "react"
 import ReactDOM from "react-dom"
 import TransitionGroup from 'react-addons-transition-group'
 
-import {Comment} from './comment'
+import {Comment} from 'client_comment'
 
 export class CommentList extends React.Component {
   
