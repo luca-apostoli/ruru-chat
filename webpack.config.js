@@ -9,7 +9,10 @@ var prod = env === 'prod'
 var plugins = [
   new ExtractTextPlugin("css/app.css"),
   new CopyWebPackPlugin([
-    { from: "./web/static/assets" },
+    { from: "./web/static/assets/robots.txt"},
+    { from: "./web/static/assets/favicon.ico"},
+    { from: "./web/static/assets/semantic/dist", to: "semantic", toType: 'dir'},
+    { from: "./web/static/assets/images", to: "images", toType: 'dir'},
     { from: "./deps/phoenix_html/web/static/js/phoenix_html.js",
       to: "js/phoenix_html.js"
     },
@@ -60,7 +63,7 @@ module.exports = {
     loaders: [
       {
         test: /(\.js|\.jsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|semantic/,
         loader: "babel-loader",
         query: {
           presets: ['react', 'es2015']
@@ -68,6 +71,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
+        exclude: /node_modules|semantic/,
         loader: ExtractTextPlugin.extract("style", "css")
       },
       {

@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI 2.2.4 - Comment
+ * # Semantic UI undefined - Comment
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -220,7 +220,7 @@
   right: 0px;
   left: auto;
   -webkit-transition: opacity 0.2s ease;
-  transition: opacity 0.2s ease;
+          transition: opacity 0.2s ease;
   -webkit-transition-delay: 0.1s;
           transition-delay: 0.1s;
 }

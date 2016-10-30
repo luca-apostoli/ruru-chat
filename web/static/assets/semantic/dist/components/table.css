@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI 2.2.4 - Table
+ * # Semantic UI undefined - Table
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -44,7 +44,7 @@
 .ui.table th,
 .ui.table td {
   -webkit-transition: background 0.1s ease, color 0.1s ease;
-  transition: background 0.1s ease, color 0.1s ease;
+          transition: background 0.1s ease, color 0.1s ease;
 }
 
 /* Headers */

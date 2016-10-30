@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI 2.2.4 - Icon
+ * # Semantic UI undefined - Icon
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -124,7 +124,7 @@ i.link.icons {
   cursor: pointer;
   opacity: 0.8;
   -webkit-transition: opacity 0.1s ease;
-  transition: opacity 0.1s ease;
+          transition: opacity 0.1s ease;
 }
 i.link.icon:hover,
 i.link.icons:hover {

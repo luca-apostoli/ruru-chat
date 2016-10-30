@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI 2.2.4 - Popup
+ * # Semantic UI undefined - Popup
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -141,14 +141,14 @@
   -webkit-transform-origin: center top;
           transform-origin: center top;
   -webkit-transition: all 0.1s ease;
-  transition: all 0.1s ease;
+          transition: all 0.1s ease;
 }
 [data-tooltip]:after {
   opacity: 1;
   -webkit-transform-origin: center bottom;
           transform-origin: center bottom;
   -webkit-transition: all 0.1s ease;
-  transition: all 0.1s ease;
+          transition: all 0.1s ease;
 }
 [data-tooltip]:hover:before,
 [data-tooltip]:hover:after {
